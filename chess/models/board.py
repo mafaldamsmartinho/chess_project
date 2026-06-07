@@ -30,8 +30,8 @@ class Board:
                             'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8'}
         return position in ALLOWED_POSITIONS
 
-        
-
+    def position_to_index(position: str):
+        return list(position)
 
 
 

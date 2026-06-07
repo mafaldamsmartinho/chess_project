@@ -41,8 +41,26 @@ class Board:
 
     def get_piece(self, position: str):
         sq_index = self.position_to_index(position)
-        self.setup_board()
         return self.board[int(sq_index[0])][int(sq_index[1])]
+
+    def set_piece(self, position: str, piece: Piece):
+        position_index = self.position_to_index(position)
+        self.board[position_index[0]][position_index[1]] = piece
+
+
+        
+
+# board = Board()
+# board.setup_board()
+# p = board.get_piece('a4')
+# print(p.colour, p.type, p.index)
+# board.set_piece('d6', Piece('white', 'queen', 1))
+# p2 = board.get_piece('d6')
+# print(p2.colour, p2.type, p2.index)
+
+# board.set_piece('a4', None)
+# p2 = board.get_piece('a4')
+# print(p2)
 
 
 

@@ -2,20 +2,23 @@ from chess.models.piece import Piece
 
 NUM_ROWS: int = 8
 NUM_COLS: int = 8
-MAJOUR_PIECES: list = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook']
+MAJOUR_PIECES: list = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop',
+                       'knight', 'rook']
 INDEX_MAJOUR_PIECES: list = [1, 1, 1, 1, 1, 2, 2, 2]
-SQUARE_TO_INDEX: dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+SQUARE_TO_INDEX: dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5,
+                         'g': 6, 'h': 7}
+
 
 class Board:
 
     def __init__(self):
-        self.board = [[None for col in range(NUM_COLS)] 
+        self.board = [[None for col in range(NUM_COLS)]
                       for row in range(NUM_ROWS)]
 
     def setup_board(self):
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
-                if row == 7:    
+                if row == 7:
                     self.board[row][col] = Piece('black', MAJOUR_PIECES[col],
                                                  INDEX_MAJOUR_PIECES[col])
                 if row == 6:
@@ -27,15 +30,19 @@ class Board:
                                                  INDEX_MAJOUR_PIECES[col])
 
     def is_valid_position(self, position: str):
-        ALLOWED_POSITIONS = {'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8',
-                            'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8',
-                            'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8',
-                            'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8'}
+        ALLOWED_POSITIONS = {'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8',
+                             'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8',
+                             'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8',
+                             'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8',
+                             'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8',
+                             'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8',
+                             'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8',
+                             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8'}
         return position in ALLOWED_POSITIONS
 
     def position_to_index(self, position: str):
         index = list(position)
-        index_char = SQUARE_TO_INDEX.get(str(index[0]))
+        index_char = SQUARE_TO_INDEX.get(index[0])
         index_num = int(index[1]) - 1
         return (index_char, index_num)
 
@@ -43,15 +50,19 @@ class Board:
         sq_index = self.position_to_index(position)
         return self.board[int(sq_index[0])][int(sq_index[1])]
 
-    def set_piece(self, position: str, piece: Piece):
-        position_index = self.position_to_index(position)
+    def set_piece(self, position: str, piece):
+        position_index: list = self.position_to_index(position)
         self.board[position_index[0]][position_index[1]] = piece
 
+    def move_piece(self, start, end):
+        piece = self.get_piece(start)
+        if piece is not None:
+            self.set_piece(start, None)
+            self.set_piece(end, piece)
 
-        
 
-# board = Board()
-# board.setup_board()
+board = Board()
+board.setup_board()
 # p = board.get_piece('a4')
 # print(p.colour, p.type, p.index)
 # board.set_piece('d6', Piece('white', 'queen', 1))
@@ -59,8 +70,10 @@ class Board:
 # print(p2.colour, p2.type, p2.index)
 
 # board.set_piece('a4', None)
-# p2 = board.get_piece('a4')
-# print(p2)
-
-
-
+p = board.get_piece('a4')
+print(p)
+board.move_piece('a4', 'd6')
+p1 = board.get_piece('a4')
+print(p1)
+p2 = board.get_piece('d6')
+print(p2)

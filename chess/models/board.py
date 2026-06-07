@@ -60,9 +60,12 @@ class Board:
             self.set_piece(start, None)
             self.set_piece(end, piece)
 
+    def to_dict(self):
+        return self.__dict__
 
-board = Board()
-board.setup_board()
+
+# board = Board()
+# board.setup_board()
 # p = board.get_piece('a4')
 # print(p.colour, p.type, p.index)
 # board.set_piece('d6', Piece('white', 'queen', 1))
@@ -70,10 +73,11 @@ board.setup_board()
 # print(p2.colour, p2.type, p2.index)
 
 # board.set_piece('a4', None)
-p = board.get_piece('a4')
-print(p)
-board.move_piece('a4', 'd6')
-p1 = board.get_piece('a4')
-print(p1)
-p2 = board.get_piece('d6')
-print(p2)
+# p = board.get_piece('a4')
+# print(p)
+# board.move_piece('a4', 'd6')
+# p1 = board.get_piece('a4')
+# print(p1)
+# p2 = board.get_piece('d6')
+# print(p2)
+# print(board.to_dict())

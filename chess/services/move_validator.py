@@ -31,20 +31,16 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str):
         valid_mode = False
 
     if start_sq_piece.type == 'pawn':
-        pass
-        # validate_pawn_move(...)
+        valid_mode = validate_pawn_move(board, start, end)
     elif start_sq_piece.type == 'rook':
-        pass
-        # validate_rook_move(...)
+        valid_mode = validate_rook_move(board, start, end)
     elif start_sq_piece.type == 'knight':
         pass
         # validate_knight_move(...)
     elif start_sq_piece.type == 'bishop':
-        pass
-        # validate_bishop_move(...)
+        valid_mode = validate_bishop_move(board, start, end)
     elif start_sq_piece.type == 'queen':
-        pass
-        # validate_queen_move(...)
+        valid_mode = validate_queen_move(board, start, end)
     elif start_sq_piece.type == 'king':
         pass
         # validate_king_move(...)
@@ -100,7 +96,16 @@ def is_path_clear(board: Board, start: str, end: str):
             break
     return path_clear
 
-board = Board()
-game = Game()
-board.setup_board()
-print(is_valid_move(board, 'a7', 'f2', 'black'))
+
+def validate_pawn_move(board: Board, start: str, end: str):
+    start_position = board.position_to_index(start)
+    end_position = board.position_to_index(end)
+    valid_move = True
+    if abs(start_position[0] - end_position[0]) == 1 and abs(start_position[1] - end_position[1]) == 0:
+        return valid_move
+    elif board.get_piece(end) is not None and abs(start_position[0] - end_position[0]) == 1 and abs(start_position[1] - end_position[1]) == 1:
+        return valid_move
+    else:
+        valid_move = False
+        return valid_move
+

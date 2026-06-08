@@ -4,14 +4,14 @@ from chess.models.game import Game
 
 
 def is_valid_move(board: Board, start: str, end: str, current_turn: str):
-    valid_mode: bool = True
+    valid_move: bool = True
 
     if not board.is_valid_position(start):
         print(f'{start} square not valid')
-        valid_mode = False
+        valid_move = False
     if not board.is_valid_position(end):
         print(f'{end} square not valid')
-        valid_mode = False
+        valid_move = False
 
     start_sq_piece: Piece = board.get_piece(start)
     end_sq_piece: Piece = board.get_piece(end)
@@ -19,31 +19,32 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str):
     if end_sq_piece is not None:
         if end_sq_piece.colour == current_turn:
             print(f'{current_turn} piece own end square piece')
-            valid_mode = False
+            valid_move = False
     if start_sq_piece is None:
         print(f'{start} not valid. Empty start square.')
-        valid_mode = False
+        valid_move = False
     elif start_sq_piece.colour != current_turn:
         print(f'{start} not valid. Wrong turn.')
-        valid_mode = False
+        valid_move = False
     if not is_path_clear(board, start, end):
         print('Path is not clear')
-        valid_mode = False
+        valid_move = False
 
     if start_sq_piece.type == 'pawn':
-        valid_mode = validate_pawn_move(board, start, end)
+        valid_move = validate_pawn_move(board, start, end)
     elif start_sq_piece.type == 'rook':
-        valid_mode = validate_rook_move(board, start, end)
+        valid_move = validate_rook_move(board, start, end)
     elif start_sq_piece.type == 'knight':
-        pass
-        # validate_knight_move(...)
+        valid_move = validate_knight_move(board, start, end)
     elif start_sq_piece.type == 'bishop':
-        valid_mode = validate_bishop_move(board, start, end)
+        valid_move = validate_bishop_move(board, start, end)
     elif start_sq_piece.type == 'queen':
-        valid_mode = validate_queen_move(board, start, end)
+        valid_move = validate_queen_move(board, start, end)
     elif start_sq_piece.type == 'king':
-        # validate_king_move(...)
-    return valid_mode
+        valid_move = validate_king_move(board, start, end)
+    else:
+        print('error')
+    return valid_move
 
 
 def is_path_clear(board: Board, start: str, end: str):
@@ -122,6 +123,19 @@ def validate_rook_move(board: Board, start: str, end: str):
         return valid_move
 
 
+def validate_knight_move(board: Board, start: str, end: str):
+    start_position = board.position_to_index(start)
+    end_position = board.position_to_index(end)
+    valid_move = True
+    if abs(start_position[0] - end_position[0]) == 2 and abs(start_position[1] - end_position[1]) == 1:
+        return valid_move
+    elif abs(start_position[0] - end_position[0]) == 1 and abs(start_position[1] - end_position[1]) == 2:
+        return valid_move
+    else:
+        valid_move = False
+        return valid_move
+
+
 def validate_bishop_move(board: Board, start: str, end: str):
     start_position = board.position_to_index(start)
     end_position = board.position_to_index(end)
@@ -156,3 +170,10 @@ def  validate_king_move(board: Board, start: str, end: str):
     else:
         valid_move = False
         return valid_move
+
+
+board = Board()
+game = Game()
+board.setup_board()
+board.move_piece('d1', 'd4')
+print(is_valid_move(board, 'd4', 'd2', 'white'))

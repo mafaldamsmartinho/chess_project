@@ -44,7 +44,7 @@ class Board:
         index = list(position)
         index_char = SQUARE_TO_INDEX.get(index[0])
         index_num = int(index[1]) - 1
-        return (index_char, index_num)
+        return (index_num, index_char)
 
     def get_piece(self, position: str):
         sq_index = self.position_to_index(position)
@@ -62,6 +62,3 @@ class Board:
 
     def to_dict(self):
         return self.__dict__
-
-
-

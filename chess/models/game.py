@@ -14,4 +14,3 @@ class Game:
 
     def add_move(self, move_data):
         moves_history.append(move_data)
-

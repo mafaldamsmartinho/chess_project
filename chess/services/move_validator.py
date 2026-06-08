@@ -126,3 +126,18 @@ def validate_bishop_move(board: Board, start: str, end: str):
     start_position = board.position_to_index(start)
     end_position = board.position_to_index(end)
     return abs(start_position[0] - end_position[0]) == abs(start_position[1] - end_position[1])
+
+
+def  validate_queen_move(board: Board, start: str, end: str):
+    start_position = board.position_to_index(start)
+    end_position = board.position_to_index(end)
+    valid_move = True
+    if abs(start_position[0] - end_position[0]) == abs(start_position[1] - end_position[1]):
+        return valid_move
+    elif abs(start_position[0] - end_position[0]) != 0 and abs(start_position[1] - end_position[1]) == 0:
+        return valid_move
+    elif abs(start_position[0] - end_position[0]) == 0 and abs(start_position[1] - end_position[1]) != 0:
+        return valid_move
+    else:
+        valid_move = False
+        return valid_move

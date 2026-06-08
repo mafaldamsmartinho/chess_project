@@ -1,5 +1,6 @@
 from chess.models.board import Board
 from chess.models.piece import Piece
+from chess.models.game import Game
 
 
 def is_valid_move(board: Board, start: str, end: str, current_turn: str):
@@ -25,9 +26,12 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str):
     elif start_sq_piece.colour != current_turn:
         print(f'{start} not valid. Wrong turn.')
         valid_mode = False
-    elif start_sq_piece.type == 'pawn':
+    if not is_path_clear(board, start, end):
+        print('Path is not clear')
+        valid_mode = False
+
+    if start_sq_piece.type == 'pawn':
         pass
-        # is_path_clear(board, start, end)
         # validate_pawn_move(...)
     elif start_sq_piece.type == 'rook':
         pass
@@ -45,3 +49,58 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str):
         pass
         # validate_king_move(...)
     return valid_mode
+
+
+def is_path_clear(board: Board, start: str, end: str):
+    start_position: list = board.position_to_index(start)
+    end_position: list = board.position_to_index(end)
+    path_clear = True
+
+    if start_position[0] == end_position[0]:  # Same row
+        row_step = 0
+        row = start_position[0]
+        if start_position[1] < end_position[1]:
+            col_step = 1
+            col = start_position[1] + 1
+        else:
+            col_step = -1
+            col = start_position[1] - 1
+    elif start_position[1] == end_position[1]:  # Same col
+        col_step = 0
+        col = start_position[1]
+        if start_position[0] < end_position[0]:
+            row_step = 1
+            row = start_position[0] + 1
+        else:
+            row_step = -1
+            row = start_position[0] - 1
+    else:  # diagonal
+        if start_position[0] < end_position[0]:
+            row_step = 1
+            row = start_position[0] + 1
+        else:
+            row_step = -1
+            row = start_position[0] - 1
+        if start_position[1] < end_position[1]:
+            col_step = 1
+            col = start_position[1] + 1
+        else:
+            col_step = -1
+            col = start_position[1] - 1
+
+    square = (row, col)
+
+    while square != end_position:
+        if board.board[row][col] is None:
+            row = row + row_step
+            col = col + col_step
+            square = (row, col)
+        else:
+            path_clear = False
+            break
+    return path_clear
+
+board = Board()
+game = Game()
+board.setup_board()
+print(is_valid_move(board, 'a7', 'f2', 'black'))

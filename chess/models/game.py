@@ -1,6 +1,5 @@
 moves_history: list = []
 
-
 class Game:
 
     def __init__(self):

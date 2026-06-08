@@ -120,3 +120,9 @@ def validate_rook_move(board: Board, start: str, end: str):
     else:
         valid_move = False
         return valid_move
+
+
+def validate_bishop_move(board: Board, start: str, end: str):
+    start_position = board.position_to_index(start)
+    end_position = board.position_to_index(end)
+    return abs(start_position[0] - end_position[0]) == abs(start_position[1] - end_position[1])

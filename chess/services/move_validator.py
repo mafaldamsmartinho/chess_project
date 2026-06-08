@@ -42,7 +42,6 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str):
     elif start_sq_piece.type == 'queen':
         valid_mode = validate_queen_move(board, start, end)
     elif start_sq_piece.type == 'king':
-        pass
         # validate_king_move(...)
     return valid_mode
 
@@ -109,3 +108,15 @@ def validate_pawn_move(board: Board, start: str, end: str):
         valid_move = False
         return valid_move
 
+
+def validate_rook_move(board: Board, start: str, end: str):
+    start_position = board.position_to_index(start)
+    end_position = board.position_to_index(end)
+    valid_move = True
+    if abs(start_position[0] - end_position[0]) != 0 and abs(start_position[1] - end_position[1]) == 0:
+        return valid_move
+    elif abs(start_position[0] - end_position[0]) == 0 and abs(start_position[1] - end_position[1]) != 0:
+        return valid_move
+    else:
+        valid_move = False
+        return valid_move

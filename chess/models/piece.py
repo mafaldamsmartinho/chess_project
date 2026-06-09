@@ -19,5 +19,9 @@ class Piece:
         self.type = type
         self.index = index
 
+    # PRIVATE METHODS (TO BE USED JUST WITHIN THE CLASS)
+    def __str__(self):
+        return f"{self.colour} {self.type} {self.index}"
+
     def to_dict(self):
         return self.__dict__

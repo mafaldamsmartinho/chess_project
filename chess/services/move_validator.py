@@ -4,14 +4,6 @@ from chess.models.piece import Piece
 
 def is_valid_move(board: Board, start: str, end: str, current_turn: str):
     valid_move: bool = True
-
-    if not board.is_valid_position(start):
-        valid_move &= False
-        print(f'{start} square not valid')
-    if not board.is_valid_position(end):
-        valid_move &= False
-        print(f'{end} square not valid')
-
     start_sq_piece: Piece = board.get_piece(start)
     end_sq_piece: Piece = board.get_piece(end)
 

@@ -78,7 +78,7 @@ class Board:
     def to_display(self):
         board: list = []
         rows: list = []
-        row_count = 1
+        row_count = 8
         for row in range(NUM_ROWS - 1, -1, -1):
             rows.append(str(row_count))
             for col in range(NUM_COLS):
@@ -91,5 +91,5 @@ class Board:
             board.append(rows)
             print(' '.join(rows))
             rows = []
-            row_count += 1
+            row_count -= 1
         print('  '.join(LAST_ROW))

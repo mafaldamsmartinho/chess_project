@@ -61,4 +61,14 @@ class Board:
             self.set_piece(end, piece)
 
     def to_dict(self):
-        return self.__dict__
+        board: list = []
+        rows: list = []
+        for row in range(NUM_ROWS):
+            for col in range(NUM_COLS):
+                if self.board[row][col] is not None:
+                    rows.append(self.board[row][col].to_dict())
+                else:
+                    rows.append(None)
+            board.append(rows)
+            rows = []
+        return board

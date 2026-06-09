@@ -16,8 +16,8 @@ while next_turn is not None:
         print(f'{end} square not valid')
         end = input('Destination Square: ')
 
-
     if start == 'exit' or end == 'exit':
+        print("Bye, see you soon.")
         break
 
     play: dict = play_move(game, start, end)

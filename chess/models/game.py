@@ -9,6 +9,8 @@ class Game:
         self.turn = 'white'
         self.board = Board()
         self.board.setup_board()
+        self.white_king = self.board.board[0][4]
+        self.black_king = self.board.board[7][4]
 
     def switch_turn(self):
         if self.turn == 'white':

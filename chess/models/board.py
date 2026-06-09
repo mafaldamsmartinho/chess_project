@@ -7,7 +7,9 @@ MAJOUR_PIECES: list = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop',
 INDEX_MAJOUR_PIECES: list = [1, 1, 1, 1, 1, 2, 2, 2]
 SQUARE_TO_INDEX: dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5,
                          'g': 6, 'h': 7}
-
+LAST_ROW: list = ['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+PIECES_SIMPLE: dict = {'pawn': 'P', 'rook': 'R', 'knight': 'K', 'bishop': 'B', 'queen': 'Q', 'king': 'K'}
+COLOUR_SIMPLE: dict = {'black': 'B', 'white': 'W'}
 
 class Board:
 
@@ -72,3 +74,22 @@ class Board:
             board.append(rows)
             rows = []
         return board
+
+    def to_display(self):
+        board: list = []
+        rows: list = []
+        row_count = 1
+        for row in range(NUM_ROWS - 1, -1, -1):
+            rows.append(str(row_count))
+            for col in range(NUM_COLS):
+                if self.board[row][col] is not None:
+                    piece: dict = self.board[row][col].to_dict()
+                    short_name = COLOUR_SIMPLE.get(piece.get("colour")) + PIECES_SIMPLE.get(piece.get("type"))
+                    rows.append(short_name)
+                else:
+                    rows.append('--')
+            board.append(rows)
+            print(' '.join(rows))
+            rows = []
+            row_count += 1
+        print('  '.join(LAST_ROW))

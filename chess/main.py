@@ -5,7 +5,7 @@ next_turn = 'white'
 game = Game()
 
 while next_turn is not None:
-    print(game.board.to_display())
+    game.board.to_display()
     print('Next turn: ', next_turn)
     start = input('Piece to move: ')
     if not game.board.is_valid_position(start):
@@ -22,4 +22,4 @@ while next_turn is not None:
 
     play: dict = play_move(game, start, end)
     next_turn = play.get("next_turn")
-    play.get("message")
+    print(play.get("message"))

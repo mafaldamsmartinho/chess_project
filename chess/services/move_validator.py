@@ -54,20 +54,21 @@ def is_path_clear(board: Board, start: str, end: str):
         col_step = 1
     else:
         col_step = -1
+    return check_squares(board, start_position, end_position, row_step, col_step)
 
+
+def check_squares(board, start_position, end_position, row_step, col_step):
     row = start_position[0] + row_step
     col = start_position[1] + col_step
     square = (row, col)
-
     while square != end_position:
         if board.board[row][col] is None:
-            row = row + row_step
-            col = col + col_step
+            row += row_step
+            col += col_step
             square = (row, col)
         else:
             return False
     return True
-
 
 def validate_pawn_move(board: Board, start: str, end: str):
     start_position = board.position_to_index(start)

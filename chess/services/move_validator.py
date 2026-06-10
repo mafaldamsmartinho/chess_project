@@ -60,16 +60,13 @@ def is_path_clear(board: Board, start: str, end: str):
     col = start_position[1] + col_step
     square = (row, col)
 
-    if square == end_position and board.get_piece(end) is not None:
-        return False
-    else:
-        while square != end_position:
-            if board.board[row][col] is None:
-                row = row + row_step
-                col = col + col_step
-                square = (row, col)
-            else:
-                return False
+    while square != end_position:
+        if board.board[row][col] is None:
+            row = row + row_step
+            col = col + col_step
+            square = (row, col)
+        else:
+            return False
     return True
 
 
@@ -146,3 +143,4 @@ def validate_king_move(board: Board, start: str, end: str):
     else:
         valid_move = False
         return valid_move
+

@@ -7,31 +7,31 @@ def play_move(game: Game, start: str, end: str):
     found_white_king: bool = False
     found_black_king: bool = False
 
-    if is_valid_move(game.board, start, end, game.turn):
+    if is_valid_move(game.board, start, end, game.turn): # Checks if user wants to perform a valid move according with all rules.
         game.board.move_piece(start, end)
         success = True
         message = 'Move played successfully'
-        game.switch_turn()
+        game.switch_turn() # Switch player turn
         next_turn = game.turn
     else:
         success = False
         message = 'Invalid. Wrong turn or move.'
         next_turn = game.turn
 
-    for row in game.board.board:
+    for row in game.board.board: # Checks row by row if both kings still exist after the move is performed.
         if game.white_king in row:
             found_white_king |= True
         if game.black_king in row:
             found_black_king |= True
 
-    if found_white_king and not found_black_king:
+    if found_white_king and not found_black_king: # Checks if any of the kings was not found to define the winner.
         message = 'GAME OVER!!! WHITE WINS.'
         next_turn = None
     elif found_black_king and not found_white_king:
         message = 'GAME OVER!!! BLACK WINS.'
         next_turn = None
 
-    play_info: dict = {
+    play_info: dict = { # creates a dictionary to store play move.
         "success": success,
         "message": message,
         "board": game.board.to_dict(),

@@ -8,7 +8,7 @@ INDEX_MAJOUR_PIECES: list = [1, 1, 1, 1, 1, 2, 2, 2]
 SQUARE_TO_INDEX: dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5,
                          'g': 6, 'h': 7}
 LAST_ROW: list = ['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-PIECES_SIMPLE: dict = {'pawn': 'P', 'rook': 'R', 'knight': 'K', 'bishop': 'B', 'queen': 'Q', 'king': 'K'}
+PIECES_SIMPLE: dict = {'pawn': 'P', 'rook': 'R', 'knight': 'H', 'bishop': 'B', 'queen': 'Q', 'king': 'K'}
 COLOUR_SIMPLE: dict = {'black': 'B', 'white': 'W'}
 
 class Board:
@@ -79,6 +79,7 @@ class Board:
         board: list = []
         rows: list = []
         row_count = 8
+        print('  '.join(LAST_ROW))
         for row in range(NUM_ROWS - 1, -1, -1):
             rows.append(str(row_count))
             for col in range(NUM_COLS):

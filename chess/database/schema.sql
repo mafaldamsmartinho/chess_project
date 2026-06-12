@@ -3,7 +3,7 @@ players (id SERIAL PRIMARY KEY, name TEXT NOT NULL);
 
 CREATE TABLE IF NOT EXISTS games (id SERIAL PRIMARY KEY,
 white_id INTEGER, black_id INTEGER, status TEXT NOT NULL
-CHECK ( status IN ('ongoing', 'white_win', 'black_win', 'draw')),
+CHECK ( status IN ('ongoing', 'white_win', 'black_win')),
 turn TEXT NOT NULL CHECK ( turn IN ('black', 'white')), board JSONB);
 
 CREATE TABLE IF NOT EXISTS moves (id SERIAL PRIMARY KEY,

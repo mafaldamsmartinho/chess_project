@@ -8,7 +8,7 @@ class Game:
     def __init__(self):
         self.turn = 'white'
         self.board = Board()
-        self.board.setup_board()
+        self.status = 'ongoing'
         self.white_king = self.board.board[0][4]
         self.black_king = self.board.board[7][4]
 

@@ -1,5 +1,7 @@
 from chess.database.connection import get_connection
 from psycopg2.extras import Json
+from chess.models.board import Board
+from chess.models.piece import Piece
 
 
 #  Creates new player row
@@ -28,7 +30,7 @@ def create_game(white_id, black_id, board_state):
                 INSERT INTO games (white_id, black_id, status, turn, board)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;""", (white_id, black_id, 'ongoing',
-                                   'white', Json(board_state),))
+                                   'white', serialize_board(board_state),))
 
     game_id = cur.fetchone()[0]
     conn.commit()
@@ -116,7 +118,8 @@ def get_moves(game_id):
     return move_data
 
 
-def create_tables():  # Creates players, games states and moves history tables if does not exist yet
+# Creates players, games states and moves history tables if does not exist yet
+def create_tables():
     conn = get_connection()
     cur = conn.cursor()
 
@@ -129,4 +132,19 @@ def create_tables():  # Creates players, games states and moves history tables i
     conn.close()
 
 
-create_tables()
+def serialize_board(board: Board):
+    return board.to_dict()
+
+
+def deserialize_board(data: list):
+    board = Board()
+    for i, row in enumerate(data):
+        for j, el in enumerate(row):
+            if el is not None:
+                colour = el["colour"]
+                type = el["type"]
+                index = el["index"]
+                board.board[i][j] = Piece(colour, type, index)
+            else:
+                board.board[i][j] = None
+    return board

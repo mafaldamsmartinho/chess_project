@@ -11,11 +11,13 @@ LAST_ROW: list = ['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 PIECES_SIMPLE: dict = {'pawn': 'P', 'rook': 'R', 'knight': 'H', 'bishop': 'B', 'queen': 'Q', 'king': 'K'}
 COLOUR_SIMPLE: dict = {'black': 'B', 'white': 'W'}
 
+
 class Board:
 
     def __init__(self):
         self.board = [[None for col in range(NUM_COLS)]
                       for row in range(NUM_ROWS)]
+        self.setup_board()
 
     def setup_board(self):
         for row in range(NUM_ROWS):
@@ -63,7 +65,7 @@ class Board:
             self.set_piece(end, piece)
 
     def to_dict(self):
-        board: list = []
+        board_list: list = []
         rows: list = []
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
@@ -71,9 +73,9 @@ class Board:
                     rows.append(self.board[row][col].to_dict())
                 else:
                     rows.append(None)
-            board.append(rows)
+            board_list.append(rows)
             rows = []
-        return board
+        return board_list
 
     def to_display(self):
         board: list = []

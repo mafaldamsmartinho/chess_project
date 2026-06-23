@@ -26,11 +26,12 @@ def create_game(white_id, black_id, board_state):
 
     conn = get_connection()
     cur = conn.cursor()
+    board_dict: Json = serialize_board(board_state)
     cur.execute("""--sql
                 INSERT INTO games (white_id, black_id, status, turn, board)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;""", (white_id, black_id, 'ongoing',
-                                   'white', serialize_board(board_state),))
+                                   'white', board_dict,))
 
     game_id = cur.fetchone()[0]
     conn.commit()
@@ -48,12 +49,29 @@ def get_game(game_id):
                 SELECT * FROM games WHERE id = %s""", (game_id,))
 
     game_data = cur.fetchone()
-    if game_data is None:
-        raise Exception(f'There is no game id {game_id}')
+    if not game_data:
+        return None
 
     cur.close()
     conn.close()
     return game_data
+
+
+#  Returns game details from a game_id
+def get_games():
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""--sql
+                SELECT id, white_id, black_id, status, turn FROM games""")
+
+    games_data = cur.fetchall()
+    if games_data is None:
+        raise Exception('There are no games registered')
+
+    cur.close()
+    conn.close()
+    return games_data
 
 
 #  Updates game status, turn and board current state based on game_id
@@ -71,7 +89,7 @@ def update_game(game_id, current_turn, status, board_state):
                 SELECT * FROM games
                 WHERE id = %s;""", (game_id,))
     update_game_data = cur.fetchone()
-    if update_game_data is None:
+    if not update_game_data:
         raise Exception(f'Update for game id {game_id} not succsessful')
 
     conn.commit()
@@ -107,11 +125,11 @@ def get_moves(game_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""--sql
-                SELECT * FROM moves WHERE id = %s""", (game_id,))
+                SELECT * FROM moves WHERE game_id = %s""", (game_id,))
 
     move_data = cur.fetchall()
     if move_data is None:
-        raise Exception(f'There is no moves for this game id {game_id}')
+        return []
 
     cur.close()
     conn.close()
@@ -133,17 +151,17 @@ def create_tables():
 
 
 def serialize_board(board: Board):
-    return board.to_dict()
+    return Json(board.to_dict())
 
 
-def deserialize_board(data: list):
+def deserialize_board(data):
     board = Board()
     for i, row in enumerate(data):
         for j, el in enumerate(row):
             if el is not None:
-                colour = el["colour"]
-                type = el["type"]
-                index = el["index"]
+                colour = el.get('colour')
+                type = el.get('type')
+                index = el.get('index')
                 board.board[i][j] = Piece(colour, type, index)
             else:
                 board.board[i][j] = None

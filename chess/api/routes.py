@@ -61,12 +61,15 @@ def play_move_router(request: MoveRequest, game_id: int):
         raise HTTPException(status_code=400, detail='Invalid request. End move not valid.')
 
     piece: Piece = game.board.get_piece(request.start_square)
-    captured_piece = game.board.get_piece(request.end_square)
+    captured_piece: Piece = game.board.get_piece(request.end_square)
     move_data = get_moves(game_id)
     result = play_move(game, request.start_square, request.end_square)
 
     if piece is None:
         raise HTTPException(status_code=400, detail="No piece found on start square.")
+
+    if captured_piece is not None:
+        captured_piece = f'{captured_piece.colour}_{captured_piece.type}'
 
     if not move_data:
         move_number = 1

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chess UI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #222;
+      background: #f4f1ea;
+    }
+
+    main {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 28px;
+    }
+
+    .board {
+      width: min(80vw, 560px);
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      border: 2px solid #303030;
+    }
+
+    .square {
+      border: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: clamp(28px, 7vw, 52px);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .light {
+      background: #f0d9b5;
+    }
+
+    .dark {
+      background: #b58863;
+    }
+
+    .selected {
+      outline: 4px solid #2f80ed;
+      outline-offset: -4px;
+    }
+
+    .label {
+      position: absolute;
+      left: 4px;
+      bottom: 3px;
+      font-size: 11px;
+      color: rgba(0, 0, 0, 0.55);
+    }
+
+    aside {
+      display: grid;
+      gap: 12px;
+    }
+
+    input,
+    button {
+      width: 100%;
+      min-height: 36px;
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid #333;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #eee;
+    }
+
+    .status,
+    .moves {
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+
+    .moves {
+      min-height: 120px;
+      max-height: 240px;
+      overflow: auto;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .board {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <h1>Chess</h1>
+      <div id="board" class="board"></div>
+    </section>
+
+    <aside>
+      <input id="whitePlayer" value="White" aria-label="White player">
+      <input id="blackPlayer" value="Black" aria-label="Black player">
+      <button id="newGame">New Game</button>
+      <input id="gameId" placeholder="Game ID" aria-label="Game ID">
+      <button id="loadGame">Load Game</button>
+      <div id="status" class="status">No game loaded.</div>
+      <div id="moves" class="moves"></div>
+    </aside>
+  </main>
+
+  <script>
+    const boardEl = document.querySelector("#board");
+    const statusEl = document.querySelector("#status");
+    const movesEl = document.querySelector("#moves");
+    const gameIdEl = document.querySelector("#gameId");
+    const pieces = {
+      white: { king: "♔", queen: "♕", rook: "♖", bishop: "♗", knight: "♘", pawn: "♙" },
+      black: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" }
+    };
+
+    let currentGame = null;
+    let selectedSquare = null;
+
+    function squareName(row, col) {
+      return "abcdefgh"[col] + (row + 1);
+    }
+
+    function renderBoard(board) {
+      boardEl.innerHTML = "";
+
+      for (let row = 7; row >= 0; row -= 1) {
+        for (let col = 0; col < 8; col += 1) {
+          const square = squareName(row, col);
+          const piece = board[row][col];
+          const button = document.createElement("button");
+          button.className = `square ${(row + col) % 2 === 0 ? "dark" : "light"}`;
+          button.dataset.square = square;
+          button.innerHTML = piece ? pieces[piece.colour][piece.type] : "";
+
+          const label = document.createElement("span");
+          label.className = "label";
+          label.textContent = square;
+          button.appendChild(label);
+
+          if (selectedSquare === square) {
+            button.classList.add("selected");
+          }
+
+          button.addEventListener("click", () => selectSquare(square));
+          boardEl.appendChild(button);
+        }
+      }
+    }
+
+    function renderGame(game) {
+      currentGame = game;
+      gameIdEl.value = game.game_id;
+      statusEl.textContent = `Game ${game.game_id} | ${game.status} | turn: ${game.turn}`;
+      renderBoard(game.board);
+      loadMoves();
+    }
+
+    async function api(path, options) {
+      const response = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        ...options
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Request failed");
+      }
+
+      return data;
+    }
+
+    async function createGame() {
+      try {
+        const game = await api("/games", {
+          method: "POST",
+          body: JSON.stringify({
+            white_player: document.querySelector("#whitePlayer").value,
+            black_player: document.querySelector("#blackPlayer").value
+          })
+        });
+        selectedSquare = null;
+        renderGame(game);
+      } catch (error) {
+        statusEl.textContent = error.message;
+      }
+    }
+
+    async function loadGame() {
+      try {
+        const game = await api(`/games/${gameIdEl.value}`);
+        selectedSquare = null;
+        renderGame(game);
+      } catch (error) {
+        statusEl.textContent = error.message;
+      }
+    }
+
+    async function loadMoves() {
+      if (!currentGame) return;
+
+      try {
+        const moves = await api(`/games/${currentGame.game_id}/moves`);
+        movesEl.innerHTML = moves.map((move) => (
+          `<div>${move.move_number}. ${move.piece}: ${move.start_square} -> ${move.end_square}</div>`
+        )).join("");
+      } catch {
+        movesEl.textContent = "";
+      }
+    }
+
+    async function selectSquare(square) {
+      if (!currentGame) return;
+
+      if (!selectedSquare) {
+        selectedSquare = square;
+        renderBoard(currentGame.board);
+        return;
+      }
+
+      try {
+        const result = await api(`/games/${currentGame.game_id}/move`, {
+          method: "POST",
+          body: JSON.stringify({
+            start_square: selectedSquare,
+            end_square: square
+          })
+        });
+        selectedSquare = null;
+        statusEl.textContent = result.message;
+        await loadGame();
+      } catch (error) {
+        selectedSquare = null;
+        renderBoard(currentGame.board);
+        statusEl.textContent = error.message;
+      }
+    }
+
+    document.querySelector("#newGame").addEventListener("click", createGame);
+    document.querySelector("#loadGame").addEventListener("click", loadGame);
+  </script>
+</body>
+</html>

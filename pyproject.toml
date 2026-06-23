@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.11"
 numpy = ">=1.26.4"
+fastapi = {extras = ["standard"], version = "^0.136.3"}
 
 [build.system]
 requires = ["poetry-core"]

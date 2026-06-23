@@ -11,7 +11,7 @@ def play_move(game: Game, start: str, end: str):
         game.board.move_piece(start, end)
         success = True
         message = 'Move played successfully'
-        game.switch_turn() # Switch player turn
+        game.switch_turn()  # Switch player turn
         next_turn = game.turn
     else:
         success = False
@@ -26,9 +26,11 @@ def play_move(game: Game, start: str, end: str):
 
     if found_white_king and not found_black_king: # Checks if any of the kings was not found to define the winner.
         message = 'GAME OVER!!! WHITE WINS.'
+        game.status = 'white_win'
         next_turn = None
     elif found_black_king and not found_white_king:
         message = 'GAME OVER!!! BLACK WINS.'
+        game.status = 'black_win'
         next_turn = None
 
     play_info: dict = { # creates a dictionary to store play move.

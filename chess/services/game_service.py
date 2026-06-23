@@ -11,7 +11,7 @@ def play_move(game: Game, start: str, end: str):
         game.board.move_piece(start, end)
         success = True
         message = 'Move played successfully'
-        game.switch_turn() # Switch player turn
+        game.switch_turn()  # Switch player turn
         next_turn = game.turn
     else:
         success = False

@@ -1,39 +1,71 @@
-from chess.models.board import Board
+from chess.models.board import Board, ALLOWED_POSITIONS
 from chess.models.piece import Piece
 
 
+def is_legal_move(board: Board, start: str, end: str, current_turn: str):
+    if not is_valid_move(board, start, end, current_turn):
+        return False
+
+    temp_board = Board()
+    temp_board.board = board.board
+    temp_board.move_piece(start, end)
+
+    if is_king_in_check(temp_board, current_turn):
+        return False
+    return True
+
+
+def is_king_in_check(temp_board: Board, current_turn: str):
+    # Check where current turn king is
+    for el in ALLOWED_POSITIONS:
+        piece = temp_board.get_piece(el)
+        if piece is not None and piece.type == 'king' and piece.colour == current_turn:
+            king_position = el
+
+    if current_turn == 'white':
+        next_turn = 'black'
+    else:
+        next_turn = 'white'
+
+    for el in ALLOWED_POSITIONS:
+        piece = temp_board.get_piece(el)
+        if piece is not None and piece.colour == next_turn:
+            if is_valid_move(temp_board, el, king_position, next_turn):
+                return True
+    return False
+
+
 def is_valid_move(board: Board, start: str, end: str, current_turn: str):
-    valid_move: bool = True
     start_sq_piece: Piece = board.get_piece(start)
     end_sq_piece: Piece = board.get_piece(end)
 
     if end_sq_piece is not None:
         if end_sq_piece.colour == current_turn:
-            valid_move &= False
             print(f'{current_turn} piece own end square piece')
+            return False
     if start_sq_piece is None:
-        valid_move &= False
         print(f'{start} not valid. Empty start square.')
+        return False
     elif start_sq_piece.colour != current_turn:
-        valid_move &= False
         print(f'{start} not valid. Wrong turn.')
+        return False
+
+    if start_sq_piece.type == 'pawn' and not validate_pawn_move(board, start, end):
+        return False
+    elif start_sq_piece.type == 'rook' and not validate_rook_move(board, start, end):
+        return False
+    elif start_sq_piece.type == 'knight' and not validate_knight_move(board, start, end):
+        return False
+    elif start_sq_piece.type == 'bishop' and not validate_bishop_move(board, start, end):
+        return False
+    elif start_sq_piece.type == 'queen' and not validate_queen_move(board, start, end):
+        return False
+    elif start_sq_piece.type == 'king' and not validate_king_move(board, start, end):
+        return False
     if not is_path_clear(board, start, end) and start_sq_piece.type != 'knight':
-        valid_move &= False
         print(f'Path between {start} and {end} is not clear')
-    if valid_move:
-        if start_sq_piece.type == 'pawn':
-            valid_move &= validate_pawn_move(board, start, end)
-        elif start_sq_piece.type == 'rook':
-            valid_move &= validate_rook_move(board, start, end)
-        elif start_sq_piece.type == 'knight':
-            valid_move &= validate_knight_move(board, start, end)
-        elif start_sq_piece.type == 'bishop':
-            valid_move &= validate_bishop_move(board, start, end)
-        elif start_sq_piece.type == 'queen':
-            valid_move &= validate_queen_move(board, start, end)
-        elif start_sq_piece.type == 'king':
-            valid_move &= validate_king_move(board, start, end)
-    return valid_move
+        return False
+    return True
 
 
 def is_path_clear(board: Board, start: str, end: str):
@@ -70,6 +102,7 @@ def check_squares(board, start_position, end_position, row_step, col_step):
             return False
     return True
 
+
 def validate_pawn_move(board: Board, start: str, end: str):
     start_position = board.position_to_index(start)
     end_position = board.position_to_index(end)
@@ -92,7 +125,7 @@ def validate_pawn_move(board: Board, start: str, end: str):
             return True
         else:
             return False
-        
+
 
 def validate_rook_move(board: Board, start: str, end: str):
     start_position = board.position_to_index(start)

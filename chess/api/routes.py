@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from chess.database.repositories import create_game, create_player, get_game, deserialize_board, update_game, save_move, get_moves, get_games
+from chess.database.repositories import create_game, create_player, get_game, deserialize_board, update_game, save_move, get_moves, get_games, check_player
 from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse
 from chess.models.game import Game
 from chess.models.piece import Piece
@@ -11,8 +11,13 @@ router = APIRouter()
 
 @router.post('/games')
 def start_game_router(request: CreateGameRequest):
-    white_id = create_player(request.white_player)  # Create white id player in table
-    black_id = create_player(request.black_player)  # Create white id player in table
+    white_id = check_player(request.white_player)
+    black_id = check_player(request.black_player)
+
+    if white_id is None:
+        white_id = create_player(request.white_player)  # Create white id player in table
+    if black_id is None:
+        black_id = create_player(request.black_player)  # Create black id player in table
     game = Game()
     board = game.board
 

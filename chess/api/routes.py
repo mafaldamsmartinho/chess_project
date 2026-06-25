@@ -60,6 +60,9 @@ def play_move_router(request: MoveRequest, game_id: int):
     game.turn = game_data[4]
     game.board = deserialize_board(game_data[5])
 
+    if game.status != 'ongoing':
+        raise HTTPException(status_code=400, detail='This game has ended.')
+
     if not game.board.is_valid_position(request.start_square):
         raise HTTPException(status_code=400, detail='Invalid request. Start move not valid.')
     elif not game.board.is_valid_position(request.end_square):
@@ -75,6 +78,12 @@ def play_move_router(request: MoveRequest, game_id: int):
 
     if captured_piece is not None:
         captured_piece = f'{captured_piece.colour}_{captured_piece.type}'
+        if captured_piece == 'white_king':
+            game.status = 'black_wins'
+            game.turn = 'finished'
+        elif captured_piece == 'black_king':
+            game.status = 'white_wins'
+            game.turn = 'finished'
 
     if not move_data:
         move_number = 1

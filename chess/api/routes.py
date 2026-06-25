@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from chess.database.repositories import create_game, create_player, get_game, deserialize_board, update_game, save_move, get_moves, get_games, check_player
+from chess.database.repositories import create_game, create_player, get_game, deserialize_board, update_game, save_move, get_moves, get_games, check_player, get_players
 from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse
 from chess.models.game import Game
 from chess.models.piece import Piece
@@ -31,6 +31,13 @@ def start_game_router(request: CreateGameRequest):
         "turn": game[4],
         "board": game[5],
         }
+
+
+@router.get('/games/{game_id}/players')
+def get_players_router(game_id: int):  # Get players names based on game_id
+    white_player, black_player = get_players(game_id)
+    return white_player, black_player
+
 
 
 @router.get('/games/{game_id}', response_model=GameResponse)

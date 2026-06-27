@@ -1,16 +1,16 @@
 from chess.models.board import Board, ALLOWED_POSITIONS
 from chess.models.piece import Piece
+from chess.models.game import Game
+import copy
 
 
-def is_legal_move(board: Board, start: str, end: str, current_turn: str):
-    if not is_valid_move(board, start, end, current_turn):
+def is_legal_move(game: Game, start: str, end: str):
+    temp_game = copy.deepcopy(game)
+    if not is_valid_move(temp_game.board, start, end, game.turn):
         return False
 
-    temp_board = Board()
-    temp_board.board = board.board
-    temp_board.move_piece(start, end)
-
-    if is_king_in_check(temp_board, current_turn):
+    temp_game.board.move_piece(start, end)
+    if is_king_in_check(temp_game.board, game.turn):
         return False
     return True
 
@@ -62,7 +62,9 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str):
         return False
     elif start_sq_piece.type == 'king' and not validate_king_move(board, start, end):
         return False
-    if not is_path_clear(board, start, end) and start_sq_piece.type != 'knight':
+    if start_sq_piece.type == 'knight':
+        return True
+    if not is_path_clear(board, start, end):
         print(f'Path between {start} and {end} is not clear')
         return False
     return True

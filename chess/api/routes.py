@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
-from chess.database.repositories import create_game, create_player, get_game, deserialize_board, update_game, save_move, get_moves, get_games
+from chess.database.repositories import create_game, create_player, get_game, deserialize_board, update_game, save_move, get_moves, get_games, check_player, get_players
 from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse
 from chess.models.game import Game
-from chess.models.piece import Piece
+from chess.models.bot import Bot
 from chess.services.game_service import play_move
 
 
@@ -11,8 +11,13 @@ router = APIRouter()
 
 @router.post('/games')
 def start_game_router(request: CreateGameRequest):
-    white_id = create_player(request.white_player)  # Create white id player in table
-    black_id = create_player(request.black_player)  # Create white id player in table
+    white_id = check_player(request.white_player)
+    black_id = check_player(request.black_player)
+
+    if white_id is None:
+        white_id = create_player(request.white_player)  # Create white id player in table
+    if black_id is None:
+        black_id = create_player(request.black_player)  # Create black id player in table
     game = Game()
     board = game.board
 
@@ -26,6 +31,13 @@ def start_game_router(request: CreateGameRequest):
         "turn": game[4],
         "board": game[5],
         }
+
+
+@router.get('/games/{game_id}/players')
+def get_players_router(game_id: int):  # Get players names based on game_id
+    white_player, black_player = get_players(game_id)
+    return white_player, black_player
+
 
 
 @router.get('/games/{game_id}', response_model=GameResponse)
@@ -45,7 +57,7 @@ def get_game_router(game_id: int):  # Get game data based on game id
 
 
 @router.post('/games/{game_id}/move')
-def play_move_router(request: MoveRequest, game_id: int):
+def play_turn_router(request: MoveRequest, game_id: int):
     game_data = get_game(game_id)
     if game_data is None:
         raise HTTPException(status_code=404, detail=f"Game id {game_id} not found")
@@ -55,31 +67,35 @@ def play_move_router(request: MoveRequest, game_id: int):
     game.turn = game_data[4]
     game.board = deserialize_board(game_data[5])
 
+    if game.status != 'ongoing':
+        raise HTTPException(status_code=400, detail='This game has ended.')
     if not game.board.is_valid_position(request.start_square):
         raise HTTPException(status_code=400, detail='Invalid request. Start move not valid.')
     elif not game.board.is_valid_position(request.end_square):
         raise HTTPException(status_code=400, detail='Invalid request. End move not valid.')
-
-    piece: Piece = game.board.get_piece(request.start_square)
-    captured_piece: Piece = game.board.get_piece(request.end_square)
-    move_data = get_moves(game_id)
-    result = play_move(game, request.start_square, request.end_square)
-
-    if piece is None:
+    if game.board.get_piece(request.start_square) is None:
         raise HTTPException(status_code=400, detail="No piece found on start square.")
 
-    if captured_piece is not None:
-        captured_piece = f'{captured_piece.colour}_{captured_piece.type}'
+    result = play_move(request.start_square, request.end_square, game_id)
+    if result is None:
+        raise HTTPException(status_code=400, detail="Ilegal move.")
 
-    if not move_data:
-        move_number = 1
-    else:
-        move_number = max(row[2] for row in move_data) + 1
+    if game_data[1] == 1 or game_data[2] == 1:  # We are playing with bot
+        game_data_bot = get_game(game_id)
+        game.status = game_data_bot[3]
+        game.turn = game_data_bot[4]
+        game.board = deserialize_board(game_data_bot[5])
+        if game.status != 'ongoing':
+            raise HTTPException(status_code=400, detail='This game has ended.')
+        bot = Bot()
+        bot_start, bot_end = bot.chose_move(game)
+        bot_result = play_move(bot_start, bot_end, game_id)
+        if bot_result is None:
+            raise HTTPException(status_code=400, detail="Bot ilegal move.")
+        return bot_result
 
-    if result["success"] is True:
-        save_move(game_id, move_number, request.start_square, request.end_square, f'{piece.colour}_{piece.type}', captured_piece)
-        update_game(game_id, game.turn, game.status, game.board.to_dict())
     return result
+
 
 
 @router.get('/games/{game_id}/moves')

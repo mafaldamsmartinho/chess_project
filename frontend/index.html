@@ -125,7 +125,9 @@
     </section>
 
     <aside>
+      <label for="whitePlayer">White Player</label>
       <input id="whitePlayer" value="White" aria-label="White player">
+      <label for="blackPlayer">Black Player</label>
       <input id="blackPlayer" value="Black" aria-label="Black player">
       <button id="newGame">New Game</button>
       <input id="gameId" placeholder="Game ID" aria-label="Game ID">
@@ -140,9 +142,11 @@
     const statusEl = document.querySelector("#status");
     const movesEl = document.querySelector("#moves");
     const gameIdEl = document.querySelector("#gameId");
+    const whitePlayerEl = document.querySelector("#whitePlayer");
+    const blackPlayerEl = document.querySelector("#blackPlayer");
     const pieces = {
-      white: { king: "♔", queen: "♕", rook: "♖", bishop: "♗", knight: "♘", pawn: "♙" },
-      black: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" }
+      black: { king: "♔", queen: "♕", rook: "♖", bishop: "♗", knight: "♘", pawn: "♙" },
+      white: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" }
     };
 
     let currentGame = null;
@@ -222,9 +226,16 @@
         const game = await api(`/games/${gameIdEl.value}`);
         selectedSquare = null;
         renderGame(game);
+        await loadPlayers(game.game_id);
       } catch (error) {
         statusEl.textContent = error.message;
       }
+    }
+
+    async function loadPlayers(gameId) {
+      const players = await api(`/games/${gameId}/players`);
+      whitePlayerEl.value = players[0];
+      blackPlayerEl.value = players[1];
     }
 
     async function loadMoves() {

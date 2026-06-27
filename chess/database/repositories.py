@@ -21,6 +21,44 @@ def create_player(name: str):
     return player_id
 
 
+def check_player(name: str):
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""--sql
+                SELECT id FROM players WHERE name = %s;""", (name,))
+
+    player_id = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return player_id
+
+
+def get_players(game_id: int):
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""--sql
+                SELECT players.name
+                FROM games
+                JOIN players ON games.white_id = players.id
+                WHERE games.id = %s;""", (game_id,))
+    white_player = cur.fetchone()[0]
+    cur.execute("""--sql
+                SELECT players.name
+                FROM games
+                JOIN players ON games.black_id = players.id
+                WHERE games.id = %s;""", (game_id,))
+    black_player = cur.fetchone()[0]
+
+    if get_game(game_id) is None:
+        return None
+    cur.close()
+    conn.close()
+    return white_player, black_player
+
+
 #  Creates a new game row, with auto id, starting as white.
 def create_game(white_id, black_id, board_state):
 

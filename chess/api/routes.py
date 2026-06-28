@@ -1,13 +1,18 @@
 from fastapi import APIRouter, HTTPException
-from chess.database.repositories import create_game, create_player, get_game, deserialize_board, update_game, save_move, get_moves, get_games, check_player, get_players
-from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse
+from chess.database.repositories import create_game, create_player, get_game, deserialize_board, get_moves, get_games, check_player, get_players
+from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse, LoadGameResponse
 from chess.models.game import Game
 from chess.models.bot import Bot
 from chess.services.game_service import play_move
-
+import logging
 
 router = APIRouter()
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:     %(message)s"
+)
+logger = logging.getLogger("uvicorn.error")
 
 @router.post('/games')
 def start_game_router(request: CreateGameRequest):
@@ -39,28 +44,30 @@ def get_players_router(game_id: int):  # Get players names based on game_id
     return white_player, black_player
 
 
-
-@router.get('/games/{game_id}', response_model=GameResponse)
+@router.get('/games/{game_id}')
 def get_game_router(game_id: int):  # Get game data based on game id
-    game = get_game(game_id)
-    if game is None:
-        raise HTTPException(status_code=404, detail=f"Game id {game_id} not found")
+    try:
+        game = get_game(game_id)
+    except HTTPException as e:
+        logger.warning(f"No Game {game_id} found")
+        raise HTTPException(status_code=400, detail=e.detail)
 
-    return {
-        "game_id": game[0],
-        "white_id": game[1],
-        "black_id": game[2],
-        "status": game[3],
-        "turn": game[4],
-        "board": game[5],
-        }
+    print(f"Succesfully loaded game {game_id}")
+    return GameResponse(
+        game_id=game[0],
+        white_id=game[1],
+        black_id=game[2],
+        status=game[3],
+        turn=game[4],
+        board=game[5],
+        )
 
 
 @router.post('/games/{game_id}/move')
 def play_turn_router(request: MoveRequest, game_id: int):
     game_data = get_game(game_id)
     if game_data is None:
-        raise HTTPException(status_code=404, detail=f"Game id {game_id} not found")
+        return HTTPException(status_code=404, detail=f"Game id {game_id} not found")
 
     game = Game()
     game.status = game_data[3]

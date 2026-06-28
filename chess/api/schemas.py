@@ -21,6 +21,11 @@ class GameResponse(BaseModel):
     board: Any
 
 
+class LoadGameResponse(BaseModel):
+    game_response: GameResponse | None
+    message: str
+
+
 class MoveResponse(BaseModel):
     id: int
     game_id: int

@@ -1,5 +1,5 @@
 from chess.services.move_validator import is_legal_move
-from chess.models.board import Board, ALLOWED_POSITIONS
+from chess.models.board import ALLOWED_POSITIONS
 from chess.models.game import Game
 
 
@@ -27,5 +27,5 @@ class Bot:
         return legal_moves
 
     def chose_move(self, game: Game):
-        return self.possible_moves(game)[5]
+        return self.possible_moves(game)[1]
 

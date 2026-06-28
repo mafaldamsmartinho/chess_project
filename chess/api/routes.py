@@ -1,18 +1,14 @@
 from fastapi import APIRouter, HTTPException
-from chess.database.repositories import create_game, create_player, get_game, deserialize_board, get_moves, get_games, check_player, get_players
-from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse, LoadGameResponse
+from chess.database.repositories import create_game, create_player, get_game, deserialize_board, get_moves, check_player, get_players
+from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse
 from chess.models.game import Game
 from chess.models.bot import Bot
 from chess.services.game_service import play_move
-import logging
+from chess.models.chess_logger import logger
+
 
 router = APIRouter()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s:     %(message)s"
-)
-logger = logging.getLogger("uvicorn.error")
 
 @router.post('/games')
 def start_game_router(request: CreateGameRequest):
@@ -28,18 +24,17 @@ def start_game_router(request: CreateGameRequest):
 
     game_id = create_game(white_id, black_id, board)  # Create new game
     game = get_game(game_id)
-    return {
-        "game_id": game[0],
-        "white_id": game[1],
-        "black_id": game[2],
-        "status": game[3],
-        "turn": game[4],
-        "board": game[5],
-        }
+    return CreateGameRequest(
+        game_id=game[0],
+        white_id=game[1],
+        black_id=game[2],
+        status=game[3],
+        turn=game[4],
+        board=game[5])
 
 
 @router.get('/games/{game_id}/players')
-def get_players_router(game_id: int):  # Get players names based on game_id
+def get_players_router(game_id: int) -> str:  # Get players names based on game_id
     white_player, black_player = get_players(game_id)
     return white_player, black_player
 
@@ -52,7 +47,7 @@ def get_game_router(game_id: int):  # Get game data based on game id
         logger.warning(f"No Game {game_id} found")
         raise HTTPException(status_code=400, detail=e.detail)
 
-    print(f"Succesfully loaded game {game_id}")
+    logger.info(f"Succesfully loaded game {game_id}")
     return GameResponse(
         game_id=game[0],
         white_id=game[1],
@@ -104,7 +99,6 @@ def play_turn_router(request: MoveRequest, game_id: int):
     return result
 
 
-
 @router.get('/games/{game_id}/moves')
 def get_moves_router(game_id):
     move_data = get_moves(game_id)
@@ -121,17 +115,3 @@ def get_moves_router(game_id):
         })
     return present_moves
 
-
-@router.get('/games')
-def get_games_router():
-    games_data = get_games()
-    present_games = []
-    for row in games_data:
-        present_games.append({
-            "id": row[0],
-            "white_id": row[1],
-            "black_number": row[2],
-            "status": row[3],
-            "turn": row[4]
-            })
-    return present_games

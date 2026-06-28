@@ -2,35 +2,62 @@ from chess.models.board import Board, ALLOWED_POSITIONS
 from chess.models.piece import Piece
 from chess.models.game import Game
 import copy
+from fastapi import HTTPException
 
 
 def is_legal_move(game: Game, start: str, end: str):
     temp_game = copy.deepcopy(game)
     if not is_valid_move(temp_game.board, start, end, game.turn):
         return False
-
+    # Checks if king will be in check after this move
     temp_game.board.move_piece(start, end)
     if is_king_in_check(temp_game.board, game.turn):
         return False
     return True
 
 
-def is_king_in_check(temp_board: Board, current_turn: str):
+def is_king_in_check_mate(game: Game, current_turn: str):
+    # Check if king is in check
+    if is_king_in_check(game.board, current_turn) and is_move_possible(game):
+        return True
+    return False
+
+
+def get_king_position(board: Board, current_turn: str):
     # Check where current turn king is
     for el in ALLOWED_POSITIONS:
-        piece = temp_board.get_piece(el)
+        piece = board.get_piece(el)
         if piece is not None and piece.type == 'king' and piece.colour == current_turn:
-            king_position = el
+            return el
 
-    if current_turn == 'white':
+
+def is_king_in_check(board: Board, king_turn: str):
+    king_position = get_king_position(board, king_turn)
+    next_turn = 'white'
+    if king_turn == 'white':
         next_turn = 'black'
-    else:
-        next_turn = 'white'
+    for el in ALLOWED_POSITIONS:
+        piece = board.get_piece(el)
+        if piece is not None and piece.colour == next_turn:  # Check if king is threaten
+            if is_valid_move(board, el, king_position, next_turn):
+                return True
+    return False
+
+
+def is_move_possible(game: Game):
+    start_positions: list = []
+    end_positions: list = []
 
     for el in ALLOWED_POSITIONS:
-        piece = temp_board.get_piece(el)
-        if piece is not None and piece.colour == next_turn:
-            if is_valid_move(temp_board, el, king_position, next_turn):
+        piece = game.board.get_piece(el)
+        if piece is not None and piece.colour == game.turn:
+            start_positions.append(el)
+        else:
+            end_positions.append(el)
+
+    for start in start_positions:
+        for end in end_positions:
+            if is_legal_move(game, start, end):
                 return True
     return False
 
@@ -48,7 +75,7 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str):
         return False
     elif start_sq_piece.colour != current_turn:
         print(f'{start} not valid. Wrong turn.')
-        return False
+        raise HTTPException(status_code=400, detail=f'{start} not valid. Wrong turn patata.')
 
     if start_sq_piece.type == 'pawn' and not validate_pawn_move(board, start, end):
         return False

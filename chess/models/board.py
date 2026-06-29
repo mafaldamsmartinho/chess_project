@@ -1,4 +1,5 @@
 from chess.models.piece import Piece
+from fastapi import HTTPException
 
 NUM_ROWS: int = 8
 NUM_COLS: int = 8
@@ -67,9 +68,10 @@ class Board:
     def move_piece(self, start, end) -> None:
         """Moves a piece from a start to an end position"""
         piece = self.get_piece(start)
-        if piece is not None:
-            self.set_piece(start, None)
-            self.set_piece(end, piece)
+        if piece is None:
+            raise HTTPException(status_code=400, detail="No piece found on start square.")
+        self.set_piece(start, None)
+        self.set_piece(end, piece)
 
     def to_dict(self) -> None:
         """Converts board into a dict of elements None or Piece"""

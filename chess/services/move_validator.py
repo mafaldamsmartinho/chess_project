@@ -18,7 +18,7 @@ def is_legal_move(game: Game, start: str, end: str) -> bool:
 
 def is_king_in_check_mate(game: Game, current_turn: str) -> bool:
     """Check if king is in check and no piece move is valid"""
-    if is_king_in_check(game.board, current_turn) and is_any_move_legal(game):
+    if is_king_in_check(game.board, current_turn) and not is_any_move_legal(game):
         return True
     return False
 
@@ -100,7 +100,6 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: str) -> bool
     if start_sq_piece.type == 'knight':
         return True
     if not is_path_clear(board, start, end):
-        logger.info(f'Path between {start} and {end} is not clear')
         return False
     return True
 
@@ -148,20 +147,20 @@ def validate_pawn_move(board: Board, start: str, end: str) -> bool:
     end_position = board.position_to_index(end)
     start_piece: Piece = board.get_piece(start)
     if start_piece.colour == 'white':
-        if end_position[0] - start_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0: #checks if pawn is moving one square on the same column.
+        if board.get_piece(end) is None and end_position[0] - start_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0:  # checks if pawn is moving one square on the same column.
             return True
-        elif end_position[0] - start_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6): #checks if pawn is moving for first time. 2 squares on the same column.
+        elif board.get_piece(end) is None and end_position[0] - start_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6):  # checks if pawn is moving for first time. 2 squares on the same column.
             return True
-        elif board.get_piece(end) is not None and end_position[0] - start_position[0] == 1 and abs(end_position[1] - start_position[1]) == 1: #checks if pawn has opponent piece in diagonal.
+        elif board.get_piece(end) is not None and end_position[0] - start_position[0] == 1 and abs(end_position[1] - start_position[1]) == 1:  # checks if pawn has opponent piece in diagonal.
             return True
         else:
             return False
     elif start_piece.colour == 'black':
-        if start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0: #checks if pawn is moving one square on the same column.
+        if board.get_piece(end) is None and start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0:  # checks if pawn is moving one square on the same column.
             return True
-        elif start_position[0] - end_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6): #checks if pawn is moving for first time. 2 squares on the same column.
+        elif board.get_piece(end) is None and start_position[0] - end_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6):  # checks if pawn is moving for first time. 2 squares on the same column.
             return True
-        elif board.get_piece(end) is not None and start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 1: #checks if pawn has opponent piece in diagonal.
+        elif board.get_piece(end) is not None and start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 1:  # checks if pawn has opponent piece in diagonal.
             return True
         else:
             return False
@@ -224,4 +223,3 @@ def validate_king_move(board: Board, start: str, end: str) -> bool:
         return True
     else:
         return False
-

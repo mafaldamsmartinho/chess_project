@@ -4,12 +4,18 @@ from typing import Any
 
 class CreateGameRequest(BaseModel):
     white_player: str
+    is_bot_white: bool
     black_player: str
+    is_bot_black: bool
 
 
 class MoveRequest(BaseModel):
     start_square: str
     end_square: str
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class GameResponse(BaseModel):

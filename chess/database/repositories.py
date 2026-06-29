@@ -5,14 +5,14 @@ from chess.models.piece import Piece
 from fastapi import HTTPException
 
 
-def create_player(name: str) -> int:
+def create_player(name: str, bot: bool) -> int:
     """Creates new player in DB and returns id"""
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""--sql
-                INSERT INTO players (name)
-                VALUES (%s)
-                RETURNING id;""", (name,))
+                INSERT INTO players (name, bot)
+                VALUES (%s, %s)
+                RETURNING id;""", (name, bot,))
 
     player_id = cur.fetchone()[0]
     conn.commit()
@@ -21,18 +21,18 @@ def create_player(name: str) -> int:
     return player_id
 
 
-def check_player(name: str) -> int:
+def check_player(name: str, bot: bool) -> int:
     """Checks if player already exists"""
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""--sql
-                SELECT id FROM players WHERE name = %s;""", (name,))
+                SELECT id FROM players WHERE name = %s and bot = %s;""", (name, bot,))
 
-    player_id = cur.fetchone()
+    player = cur.fetchone()
     conn.commit()
     cur.close()
     conn.close()
-    return player_id
+    return player[0] if player is not None else None
 
 
 def get_players(game_id: int) -> tuple:
@@ -53,7 +53,7 @@ def get_players(game_id: int) -> tuple:
     black_player = cur.fetchone()[0]
 
     if get_game(game_id) is None:
-        return None
+        raise HTTPException(status_code=404, detail=f"Game id {game_id} not found")
     cur.close()
     conn.close()
     return white_player, black_player
@@ -79,7 +79,6 @@ def create_game(white_id, black_id, board_state) -> int:
 
 def get_game(game_id) -> list:
     """Returns game details from DB"""
-
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""--sql
@@ -140,7 +139,7 @@ def save_move(game_id, move_number, start, end, piece, captured_piece) -> int:
     return move_id
 
 
-def get_moves(game_id) -> list[list]:
+def get_moves(game_id: int) -> list[list]:
     """Returns moves data from game id"""
     conn = get_connection()
     cur = conn.cursor()
@@ -154,6 +153,27 @@ def get_moves(game_id) -> list[list]:
     cur.close()
     conn.close()
     return move_data
+
+
+def get_bot_games() -> list:
+    """Returns all active games where bots are playing"""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""--sql
+                    SELECT g.id
+                    FROM games g
+                    JOIN players w ON g.white_id = w.id
+                    JOIN players b ON g.black_id = b.id
+                    WHERE g.status = 'ongoing'
+                    AND (
+                        (g.turn = 'white' AND w.bot = true)
+                        OR
+                        (g.turn = 'black' AND b.bot = true)
+                    );""",)
+    bot_games = cur.fetchall()
+    cur.close()
+    conn.close()
+    return bot_games
 
 
 def create_tables() -> None:

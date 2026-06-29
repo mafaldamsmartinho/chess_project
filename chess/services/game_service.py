@@ -2,17 +2,24 @@ from chess.models.piece import Piece
 from chess.models.game import Game
 from chess.services.move_validator import is_legal_move, is_king_in_check_mate
 from chess.database.repositories import get_game, deserialize_board, update_game, save_move, get_moves
+from fastapi import HTTPException
 
 
-def play_move(start: str, end: str, game_id: int) -> None | dict[str, dict]:
+def play_move(start: str, end: str, game_id: int) -> dict[str, dict]:
     game_data = get_game(game_id)
     game = Game()
     game.status = game_data[3]
     game.turn = game_data[4]
     game.board = deserialize_board(game_data[5])
     piece: Piece = game.board.get_piece(start)
-    captured_piece: Piece = game.board.get_piece(end)
+    captured_piece = game.board.get_piece(end)
     move_number = next_move_number(game_id)
+
+    if captured_piece is not None:
+        captured_piece = f'{piece.colour}_{piece.type}'
+
+    if game.status != 'ongoing':
+        raise HTTPException(status_code=400, detail='This game has ended.')
 
     if is_legal_move(game, start, end):  # Checks if user wants to perform a valid move according with all rules.
         game.board.move_piece(start, end)
@@ -26,7 +33,8 @@ def play_move(start: str, end: str, game_id: int) -> None | dict[str, dict]:
         save_move(game_id, move_number, start, end, f'{piece.colour}_{piece.type}', captured_piece)
         update_game(game_id, game.turn, game.status, game.board.to_dict())
         return {"board": game.board.to_dict()}
-    return None
+    else:
+        raise HTTPException(status_code=400, detail="Ilegal move.")
 
 
 def next_move_number(game_id: int) -> int:

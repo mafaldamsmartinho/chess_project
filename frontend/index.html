@@ -75,6 +75,21 @@
       gap: 12px;
     }
 
+    .player-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bot-toggle {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
     input,
     button {
       width: 100%;
@@ -90,6 +105,11 @@
 
     button:hover {
       background: #eee;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      min-height: auto;
     }
 
     .status,
@@ -126,9 +146,21 @@
 
     <aside>
       <label for="whitePlayer">White Player</label>
-      <input id="whitePlayer" value="White" aria-label="White player">
+      <div class="player-row">
+        <input id="whitePlayer" value="White" aria-label="White player">
+        <label class="bot-toggle" for="whiteBot">
+          <input id="whiteBot" type="checkbox">
+          Bot
+        </label>
+      </div>
       <label for="blackPlayer">Black Player</label>
-      <input id="blackPlayer" value="Black" aria-label="Black player">
+      <div class="player-row">
+        <input id="blackPlayer" value="Black" aria-label="Black player">
+        <label class="bot-toggle" for="blackBot">
+          <input id="blackBot" type="checkbox">
+          Bot
+        </label>
+      </div>
       <button id="newGame">New Game</button>
       <input id="gameId" placeholder="Game ID" aria-label="Game ID">
       <button id="loadGame">Load Game</button>
@@ -144,6 +176,8 @@
     const gameIdEl = document.querySelector("#gameId");
     const whitePlayerEl = document.querySelector("#whitePlayer");
     const blackPlayerEl = document.querySelector("#blackPlayer");
+    const whiteBotEl = document.querySelector("#whiteBot");
+    const blackBotEl = document.querySelector("#blackBot");
     const pieces = {
       black: { king: "♔", queen: "♕", rook: "♖", bishop: "♗", knight: "♘", pawn: "♙" },
       white: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" }
@@ -151,6 +185,9 @@
 
     let currentGame = null;
     let selectedSquare = null;
+    let gameRefreshTimer = null;
+    let isLoadingGame = false;
+    const GAME_REFRESH_INTERVAL_MS = 1000;
 
     function squareName(row, col) {
       return "abcdefgh"[col] + (row + 1);
@@ -191,6 +228,20 @@
       loadMoves();
     }
 
+    function startGameRefresh() {
+      stopGameRefresh();
+      gameRefreshTimer = setInterval(() => {
+        loadGame({ clearSelection: false, loadPlayerNames: false, silent: true });
+      }, GAME_REFRESH_INTERVAL_MS);
+    }
+
+    function stopGameRefresh() {
+      if (gameRefreshTimer) {
+        clearInterval(gameRefreshTimer);
+        gameRefreshTimer = null;
+      }
+    }
+
     async function api(path, options) {
       const response = await fetch(path, {
         headers: { "Content-Type": "application/json" },
@@ -210,25 +261,48 @@
         const game = await api("/games", {
           method: "POST",
           body: JSON.stringify({
-            white_player: document.querySelector("#whitePlayer").value,
-            black_player: document.querySelector("#blackPlayer").value
+            white_player: whitePlayerEl.value,
+            is_bot_white: whiteBotEl.checked,
+            black_player: blackPlayerEl.value,
+            is_bot_black: blackBotEl.checked
           })
         });
+        gameIdEl.value = game.game_id;
         selectedSquare = null;
-        renderGame(game);
+        await loadGame();
+        startGameRefresh();
       } catch (error) {
         statusEl.textContent = error.message;
       }
     }
 
-    async function loadGame() {
+    async function loadGame(options = {}) {
+      const {
+        clearSelection = true,
+        loadPlayerNames = true,
+        silent = false
+      } = options;
+      const gameId = gameIdEl.value;
+
+      if (!gameId || isLoadingGame) return;
+
+      isLoadingGame = true;
+
       try {
-        const game = await api(`/games/${gameIdEl.value}`);
-        selectedSquare = null;
+        const game = await api(`/games/${gameId}`);
+        if (clearSelection) {
+          selectedSquare = null;
+        }
         renderGame(game);
-        await loadPlayers(game.game_id);
+        if (loadPlayerNames) {
+          await loadPlayers(game.game_id);
+        }
       } catch (error) {
-        statusEl.textContent = error.message;
+        if (!silent) {
+          statusEl.textContent = error.message;
+        }
+      } finally {
+        isLoadingGame = false;
       }
     }
 
@@ -270,7 +344,7 @@
         });
         selectedSquare = null;
         statusEl.textContent = result.message;
-        await loadGame();
+        await loadGame({ clearSelection: false, loadPlayerNames: false });
       } catch (error) {
         selectedSquare = null;
         renderBoard(currentGame.board);
@@ -279,7 +353,10 @@
     }
 
     document.querySelector("#newGame").addEventListener("click", createGame);
-    document.querySelector("#loadGame").addEventListener("click", loadGame);
+    document.querySelector("#loadGame").addEventListener("click", async () => {
+      await loadGame();
+      startGameRefresh();
+    });
   </script>
 </body>
 </html>

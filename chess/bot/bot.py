@@ -67,8 +67,11 @@ class Bot:
                     points -= 1
         return points
 
-    def free_path_points(self, game: Game):
-        return
+    def free_path_points(self, game: Game, start, end) -> int:
+        """Returns the number of possible moves"""
+        temp_game = copy.deepcopy(game)
+        temp_game.board.move_piece(start, end)
+        return len(self.possible_moves(temp_game))
 
     def score_move(self, game: Game) -> list[list]:
         """Scores bot move"""

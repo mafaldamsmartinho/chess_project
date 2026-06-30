@@ -24,26 +24,25 @@ class Bot:
         for bot_p in bot_positions:
             for end in end_positions:
                 if is_legal_move(game, bot_p, end):
-                    legal_moves.append([bot_p, end])
+                    legal_moves.append({"start_square": bot_p, "end_suqare": end, "points": 0})
         return legal_moves
 
-    def score_move(self, game: Game):
+    def score_move(self, game: Game) -> list[list]:
         """Scores bot move"""
         possible_moves = self.possible_moves(game)
         for move in possible_moves:
-            end_position = game.board.get_piece(move[1])
+            end_position = game.board.get_piece(move["end_square"])
             if end_position is not None and end_position.type == "queen":
-                points = 5
+                move["points"] += 5
             elif end_position is not None and end_position.type == "knight":
-                points = 4
+                move["points"] += 4
             elif end_position is not None and end_position.type == "bishop":
-                points = 3
+                move["points"] += 3
             elif end_position is not None and end_position.type == "rook":
-                points = 2
+                move["points"] += 2
             elif end_position is not None and end_position.type == "pawn":
-                points = 1
-            move.append(points)
-        return
+                move["points"] += 1
+        return possible_moves
 
     def chose_move(self, game: Game):
-        return self.possible_moves(game)[1]
+        return self.score_move(game)[1]

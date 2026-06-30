@@ -35,8 +35,8 @@ def start_game_router(request: CreateGameRequest) -> GameResponse:
 
 @router.get('/games/{game_id}/players')
 def get_players_router(game_id: int):  # Get players names based on game_id
-    white_player, black_player = get_players(game_id)
-    return white_player, black_player
+    white_player, black_player, white_player_bot, black_player_bot = get_players(game_id)
+    return white_player, black_player, white_player_bot, black_player_bot
 
 
 @router.get('/games/{game_id}')

@@ -1,7 +1,8 @@
 from chess.models.piece import Piece
 from chess.models.game import Game
+from chess.models.board import Board
 from chess.services.move_validator import is_legal_move, is_king_in_check_mate
-from chess.database.repositories import get_game, deserialize_board, update_game, save_move, get_moves
+from chess.database.repositories import get_game, update_game, save_move, get_moves
 from fastapi import HTTPException
 
 
@@ -16,7 +17,7 @@ def play_move(start: str, end: str, game_id: int) -> dict[str, dict]:
     move_number = next_move_number(game_id)
 
     if captured_piece is not None:
-        captured_piece = f'{piece.colour}_{piece.type}'
+        captured_piece = f'{captured_piece.colour}_{captured_piece.type}'
 
     if game.status != 'ongoing':
         raise HTTPException(status_code=400, detail='This game has ended.')
@@ -45,3 +46,18 @@ def next_move_number(game_id: int) -> int:
     else:
         move_number = max(row[2] for row in move_data) + 1
     return move_number
+
+
+def deserialize_board(data) -> Board:
+    """Converts json board into a board list of el None or Piece"""
+    board = Board()
+    for i, row in enumerate(data):
+        for j, el in enumerate(row):
+            if el is not None:
+                colour = el.get('colour')
+                type = el.get('type')
+                index = el.get('index')
+                board.board[i][j] = Piece(colour, type, index)
+            else:
+                board.board[i][j] = None
+    return board

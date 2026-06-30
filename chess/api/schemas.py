@@ -14,6 +14,20 @@ class MoveRequest(BaseModel):
     end_square: str
 
 
+class SaveMoveRequest(BaseModel):
+    move_number: int
+    start_square: str
+    end_square: str
+    piece: str
+    captured_piece: str | None
+
+
+class UpdateGameRequest(BaseModel):
+    current_turn: str
+    status: str
+    board_state: Any
+
+
 class MessageResponse(BaseModel):
     message: str
 
@@ -39,7 +53,7 @@ class MoveResponse(BaseModel):
     start_square: str
     end_square: str
     piece: str
-    captured_piece: str
+    captured_piece: str | None
 
 
 class PlayerResponse(BaseModel):

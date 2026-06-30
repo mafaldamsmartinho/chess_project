@@ -94,7 +94,7 @@ def get_game(game_id) -> list:
     return game_data
 
 
-def update_game(game_id, current_turn, status, board_state) -> list:
+def update_game(game_id, current_turn, status, board_state):
     """Updates game status, turn and board current state in DB"""
     conn = get_connection()
     cur = conn.cursor()
@@ -105,17 +105,10 @@ def update_game(game_id, current_turn, status, board_state) -> list:
                 board = %s
                 WHERE id = %s;""",
                 (current_turn, status, Json(board_state), game_id,))
-    cur.execute("""--sql
-                SELECT * FROM games
-                WHERE id = %s;""", (game_id,))
-    update_game_data = cur.fetchone()
-    if not update_game_data:
-        raise Exception(f'Game id {game_id} update not succsessful')
-
     conn.commit()
     cur.close()
     conn.close()
-    return update_game_data
+    return
 
 
 def save_move(game_id, move_number, start, end, piece, captured_piece) -> int:
@@ -200,18 +193,3 @@ def create_tables() -> None:
 def serialize_board(board: Board) -> Json:
     """Converts board dict into a json"""
     return Json(board.to_dict())
-
-
-def deserialize_board(data) -> Board:
-    """Converts json board into a board list of el None or Piece"""
-    board = Board()
-    for i, row in enumerate(data):
-        for j, el in enumerate(row):
-            if el is not None:
-                colour = el.get('colour')
-                type = el.get('type')
-                index = el.get('index')
-                board.board[i][j] = Piece(colour, type, index)
-            else:
-                board.board[i][j] = None
-    return board

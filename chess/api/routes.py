@@ -1,12 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from chess.database.repositories import create_game, create_player, get_game, deserialize_board, get_moves, check_player, get_players
-from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse, MessageResponse
+from chess.database.repositories import create_game, create_player, get_game, get_moves, check_player, get_players, get_bot_games, save_move, update_game
+from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse, MessageResponse, UpdateGameRequest, SaveMoveRequest
 from chess.models.game import Game
-from chess.models.bot import Bot
 from chess.services.game_service import play_move
 from chess.models.chess_logger import logger
-from chess.services.bot_service import bot_play_move
-
 
 router = APIRouter()
 
@@ -39,6 +36,15 @@ def get_players_router(game_id: int):  # Get players names based on game_id
     return white_player, black_player, white_player_bot, black_player_bot
 
 
+@router.get('/bot/games')
+def get_bot_games_router() -> list:
+    """Get bot games awaiting move."""
+    bot_games = get_bot_games()
+    if not bot_games:
+        logger.info("No Game bot games found")
+    return bot_games
+
+
 @router.get('/games/{game_id}')
 def get_game_router(game_id: int):
     """Get game data based on game id"""
@@ -60,7 +66,7 @@ def get_game_router(game_id: int):
 
 
 @router.post('/games/{game_id}/move')
-def play_turn_router(request: MoveRequest, game_id: int) -> MessageResponse:
+def play_move_router(request: MoveRequest, game_id: int) -> MessageResponse:
     play_move(request.start_square, request.end_square, game_id)
     logger.info('Human move played successfully')
 
@@ -83,3 +89,15 @@ def get_moves_router(game_id) -> list:
             "captured_piece": row[6]
         })
     return present_moves
+
+
+@router.post('/moves/{game_id}')
+def save_move_router(request: SaveMoveRequest, game_id: int) -> None:
+    """Adds new move into DB"""
+    save_move(game_id, request.move_number, request.start_square, request.end_square, request.piece, request.captured_piece)
+
+
+@router.put('/games/{game_id}')
+def update_game_router(request: UpdateGameRequest, game_id: int):
+    """Updates game status, turn and board current state in DB"""
+    update_game(game_id, request.current_turn, request.status, request.board_state)

@@ -3,6 +3,7 @@ from psycopg2.extras import Json
 from chess.models.board import Board
 from chess.models.piece import Piece
 from fastapi import HTTPException
+from chess.models.chess_logger import logger
 
 
 def create_player(name: str, bot: bool) -> int:
@@ -40,23 +41,23 @@ def get_players(game_id: int) -> tuple:
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""--sql
-                SELECT players.name
+                SELECT players.name, players.bot
                 FROM games
                 JOIN players ON games.white_id = players.id
                 WHERE games.id = %s;""", (game_id,))
-    white_player = cur.fetchone()[0]
+    white_player, white_player_bot = cur.fetchone()
     cur.execute("""--sql
-                SELECT players.name
+                SELECT players.name, players.bot
                 FROM games
                 JOIN players ON games.black_id = players.id
                 WHERE games.id = %s;""", (game_id,))
-    black_player = cur.fetchone()[0]
+    black_player, black_player_bot = cur.fetchone()
 
     if get_game(game_id) is None:
         raise HTTPException(status_code=404, detail=f"Game id {game_id} not found")
     cur.close()
     conn.close()
-    return white_player, black_player
+    return white_player, black_player, white_player_bot, black_player_bot
 
 
 def create_game(white_id, black_id, board_state) -> int:
@@ -170,7 +171,13 @@ def get_bot_games() -> list:
                         OR
                         (g.turn = 'black' AND b.bot = true)
                     );""",)
-    bot_games = cur.fetchall()
+    games = cur.fetchall()
+    if not games:
+        return None
+    bot_games = []
+    for el in games:
+        bot_games.append(el[0])
+
     cur.close()
     conn.close()
     return bot_games

@@ -40,3 +40,13 @@ class MoveResponse(BaseModel):
     end_square: str
     piece: str
     captured_piece: str
+
+
+class PlayerResponse(BaseModel):
+    name: str
+    bot: bool
+
+
+class GamePlayersResponse(BaseModel):
+    white: PlayerResponse
+    black: PlayerResponse

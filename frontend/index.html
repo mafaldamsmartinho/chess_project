@@ -185,6 +185,7 @@
 
     let currentGame = null;
     let selectedSquare = null;
+    let loadedGameId = null;
     let gameRefreshTimer = null;
     let isLoadingGame = false;
     const GAME_REFRESH_INTERVAL_MS = 1000;
@@ -222,7 +223,6 @@
 
     function renderGame(game) {
       currentGame = game;
-      gameIdEl.value = game.game_id;
       statusEl.textContent = `Game ${game.game_id} | ${game.status} | turn: ${game.turn}`;
       renderBoard(game.board);
       loadMoves();
@@ -268,8 +268,9 @@
           })
         });
         gameIdEl.value = game.game_id;
+        loadedGameId = String(game.game_id);
         selectedSquare = null;
-        await loadGame();
+        await loadGame({ loadPlayerNames: true });
         startGameRefresh();
       } catch (error) {
         statusEl.textContent = error.message;
@@ -280,9 +281,9 @@
       const {
         clearSelection = true,
         loadPlayerNames = true,
-        silent = false
+        silent = false,
+        gameId = loadedGameId
       } = options;
-      const gameId = gameIdEl.value;
 
       if (!gameId || isLoadingGame) return;
 
@@ -290,6 +291,7 @@
 
       try {
         const game = await api(`/games/${gameId}`);
+        loadedGameId = String(game.game_id);
         if (clearSelection) {
           selectedSquare = null;
         }
@@ -301,15 +303,39 @@
         if (!silent) {
           statusEl.textContent = error.message;
         }
+        return false;
       } finally {
         isLoadingGame = false;
       }
+
+      return true;
     }
 
     async function loadPlayers(gameId) {
       const players = await api(`/games/${gameId}/players`);
       whitePlayerEl.value = players[0];
       blackPlayerEl.value = players[1];
+      whiteBotEl.checked = players[2];
+      blackBotEl.checked = players[3];
+    }
+
+    async function loadSelectedGame() {
+      const gameId = gameIdEl.value.trim();
+      if (!gameId) {
+        statusEl.textContent = "Enter a game ID.";
+        return;
+      }
+
+      stopGameRefresh();
+      const loaded = await loadGame({
+        clearSelection: true,
+        loadPlayerNames: true,
+        gameId
+      });
+
+      if (loaded) {
+        startGameRefresh();
+      }
     }
 
     async function loadMoves() {
@@ -353,10 +379,7 @@
     }
 
     document.querySelector("#newGame").addEventListener("click", createGame);
-    document.querySelector("#loadGame").addEventListener("click", async () => {
-      await loadGame();
-      startGameRefresh();
-    });
+    document.querySelector("#loadGame").addEventListener("click", loadSelectedGame);
   </script>
 </body>
 </html>

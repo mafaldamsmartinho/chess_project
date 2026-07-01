@@ -6,10 +6,12 @@ import time
 
 def bot_loop() -> None:
     while True:
+        initial_time = time.perf_counter()
         bot_games = get_active_bot_game_ids_call()
         for game_id in bot_games:
             bot_play_move(game_id=game_id)
             logger.info('Bot move played successfully')
+            logger.info(time.perf_counter() - initial_time)
         time.sleep(2)
 
 

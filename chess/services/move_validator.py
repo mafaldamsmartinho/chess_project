@@ -73,54 +73,31 @@ def is_any_move_legal(game: Game) -> bool:
 
 def is_valid_move(board: Board, start: str, end: str, current_turn: GameTurn | str) -> bool:
     """Global check if move is valid accosding with piece rules"""
+    is_valid = True
     current_turn = GameTurn(current_turn)
     start_sq_piece: Piece = board.get_piece(position=start)
     end_sq_piece: Piece = board.get_piece(position=end)
 
     if end_sq_piece is not None:
-        if end_sq_piece.colour == current_turn:
-            logger.info(f'{current_turn} piece own end square piece')
-            return False
-    if start_sq_piece is None:
-        logger.info(f'{start} not valid. Empty start square.')
-        return False
-    elif start_sq_piece.colour != current_turn:
-        logger.info(f'{start} not valid. Wrong turn.')
-        return False
+        is_valid &= end_sq_piece.colour != current_turn
+    is_valid &= start_sq_piece is not None  # Check if start square not empty
+    is_valid &= start_sq_piece.colour == current_turn  # Check if correct turn
 
-
-    if start_sq_piece.type == PieceType.PAWN and not validate_pawn_move(board=board, start=start, end=end):
-        return False
-    elif start_sq_piece.type == PieceType.ROOK and not validate_rook_move(board=board, start=start, end=end):
-        return False
-    elif start_sq_piece.type == PieceType.KNIGHT and not validate_knight_move(board=board, start=start, end=end):
-        return False
-    elif start_sq_piece.type == PieceType.BISHOP and not validate_bishop_move(board=board, start=start, end=end):
-        return False
-    elif start_sq_piece.type == PieceType.QUEEN and not validate_queen_move(board=board, start=start, end=end):
-        return False
-    elif start_sq_piece.type == PieceType.KING and not validate_king_move(board=board, start=start, end=end):
-        return False
-    if start_sq_piece.type == PieceType.KNIGHT:
-        return True
-    if not is_path_clear(board=board, start=start, end=end):
-        return False
-
-    # match start_sq_piece.type:
-    #     case PieceType.PAWN:
-    #         is_valid = validate_pawn_move(board=board, start=start, end=end)
-    #     case PieceType.ROOK:
-    #         is_valid = validate_rook_move(board=board, start=start, end=end)
-    #     case PieceType.KNIGHT:
-    #         is_valid = validate_knight_move(board=board, start=start, end=end)
-    #     case PieceType.BISHOP:
-    #         is_valid = validate_bishop_move(board=board, start=start, end=end)
-    #     case PieceType.QUEEN:
-    #         is_valid = validate_queen_move(board=board, start=start, end=end)
-    #     case PieceType.KING:
-    #         is_valid = validate_king_move(board=board, start=start, end=end)
-
-    return True
+    match start_sq_piece.type:
+        case PieceType.PAWN:
+            is_valid &= validate_pawn_move(board=board, start=start, end=end)
+        case PieceType.ROOK:
+            is_valid &= validate_rook_move(board=board, start=start, end=end)
+        case PieceType.KNIGHT:
+            is_valid &= validate_knight_move(board=board, start=start, end=end)
+        case PieceType.BISHOP:
+            is_valid &= validate_bishop_move(board=board, start=start, end=end)
+        case PieceType.QUEEN:
+            is_valid &= validate_queen_move(board=board, start=start, end=end)
+        case PieceType.KING:
+            is_valid &= validate_king_move(board=board, start=start, end=end)
+    is_valid &= is_path_clear(board=board, start=start, end=end) and start_sq_piece.type != PieceType.KNIGHT
+    return is_valid
 
 
 def is_path_clear(board: Board, start: str, end: str) -> bool:

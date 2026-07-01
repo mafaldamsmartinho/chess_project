@@ -2,7 +2,7 @@ from chess.models.board import Board, ALLOWED_POSITIONS
 from chess.models.enums import GameTurn, PieceType
 from chess.models.piece import Piece
 from chess.models.game import Game
-from chess.utils.chess_logger import logger
+from chess.utils.game_state import split_opponents
 import copy
 
 
@@ -47,20 +47,6 @@ def is_king_in_check(board: Board, king_turn: GameTurn | str) -> bool:
     return False
 
 
-def split_opponents(game: Game) -> list[list[str]]:
-    """Splits player turn pieces into one list, and possible moves into another list"""
-    start_positions: list = []
-    end_positions: list = []
-
-    for el in ALLOWED_POSITIONS:
-        piece = game.board.get_piece(position=el)
-        if piece is not None and piece.colour == game.turn:
-            start_positions.append(el)
-        else:
-            end_positions.append(el)
-    return [start_positions, end_positions]
-
-
 def is_any_move_legal(game: Game) -> bool:
     """Checks if any current turn pieces can be moved"""
     start_positions, end_positions = split_opponents(game=game)
@@ -73,31 +59,40 @@ def is_any_move_legal(game: Game) -> bool:
 
 def is_valid_move(board: Board, start: str, end: str, current_turn: GameTurn | str) -> bool:
     """Global check if move is valid accosding with piece rules"""
-    is_valid = True
     current_turn = GameTurn(current_turn)
     start_sq_piece: Piece = board.get_piece(position=start)
     end_sq_piece: Piece = board.get_piece(position=end)
 
-    if end_sq_piece is not None:
-        is_valid &= end_sq_piece.colour != current_turn
-    is_valid &= start_sq_piece is not None  # Check if start square not empty
-    is_valid &= start_sq_piece.colour == current_turn  # Check if correct turn
+    if end_sq_piece is not None:  # Check if captured piece is opposite turn
+        if end_sq_piece.colour == current_turn:
+            return False
+    if start_sq_piece is None:  # Check if start square not empty
+        return False
+    if start_sq_piece.colour != current_turn:  # Check if correct turn
+        return False
 
     match start_sq_piece.type:
         case PieceType.PAWN:
-            is_valid &= validate_pawn_move(board=board, start=start, end=end)
+            if not validate_pawn_move(board=board, start=start, end=end):
+                return False
         case PieceType.ROOK:
-            is_valid &= validate_rook_move(board=board, start=start, end=end)
+            if not validate_rook_move(board=board, start=start, end=end):
+                return False
         case PieceType.KNIGHT:
-            is_valid &= validate_knight_move(board=board, start=start, end=end)
+            if not validate_knight_move(board=board, start=start, end=end):
+                return False
         case PieceType.BISHOP:
-            is_valid &= validate_bishop_move(board=board, start=start, end=end)
+            if not validate_bishop_move(board=board, start=start, end=end):
+                return False
         case PieceType.QUEEN:
-            is_valid &= validate_queen_move(board=board, start=start, end=end)
+            if not validate_queen_move(board=board, start=start, end=end):
+                return False
         case PieceType.KING:
-            is_valid &= validate_king_move(board=board, start=start, end=end)
-    is_valid &= is_path_clear(board=board, start=start, end=end) and start_sq_piece.type != PieceType.KNIGHT
-    return is_valid
+            if not validate_king_move(board=board, start=start, end=end):
+                return False
+    if start_sq_piece.type == PieceType.KNIGHT:
+        return True
+    return is_path_clear(board=board, start=start, end=end)
 
 
 def is_path_clear(board: Board, start: str, end: str) -> bool:
@@ -138,6 +133,8 @@ def check_squares(
     col = start_position[1] + col_step
     square = (row, col)
     while square != end_position:
+        if row < 0 or row >= len(board.board) or col < 0 or col >= len(board.board[row]):
+            return False
         if board.board[row][col] is None:
             row += row_step
             col += col_step

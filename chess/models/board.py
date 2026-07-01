@@ -1,16 +1,21 @@
 from chess.models.piece import Piece
+from chess.models.enums import GameTurn, PieceType
 from fastapi import HTTPException
 
 NUM_ROWS: int = 8
 NUM_COLS: int = 8
-MAJOUR_PIECES: list = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop',
-                       'knight', 'rook']
+MAJOUR_PIECES: list[PieceType] = [PieceType.ROOK, PieceType.KNIGHT,
+                                  PieceType.BISHOP, PieceType.QUEEN,
+                                  PieceType.KING, PieceType.BISHOP,
+                                  PieceType.KNIGHT, PieceType.ROOK]
 INDEX_MAJOUR_PIECES: list = [1, 1, 1, 1, 1, 2, 2, 2]
 SQUARE_TO_INDEX: dict = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5,
                          'g': 6, 'h': 7}
 LAST_ROW: list = ['', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-PIECES_SIMPLE: dict = {'pawn': 'P', 'rook': 'R', 'knight': 'H', 'bishop': 'B', 'queen': 'Q', 'king': 'K'}
-COLOUR_SIMPLE: dict = {'black': 'B', 'white': 'W'}
+PIECES_SIMPLE: dict = {PieceType.PAWN: 'P', PieceType.ROOK: 'R',
+                       PieceType.KNIGHT: 'H', PieceType.BISHOP: 'B',
+                       PieceType.QUEEN: 'Q', PieceType.KING: 'K'}
+COLOUR_SIMPLE: dict = {GameTurn.BLACK: 'B', GameTurn.WHITE: 'W'}
 ALLOWED_POSITIONS = {'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8',
                      'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8',
                      'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8',
@@ -34,21 +39,27 @@ class Board:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 if row == 7:
-                    self.board[row][col] = Piece('black', MAJOUR_PIECES[col],
-                                                 INDEX_MAJOUR_PIECES[col])
+                    self.board[row][col] = Piece(colour=GameTurn.BLACK,
+                                                 type=MAJOUR_PIECES[col],
+                                                 index=INDEX_MAJOUR_PIECES[col])
                 if row == 6:
-                    self.board[row][col] = Piece('black', 'pawn', col)
+                    self.board[row][col] = Piece(colour=GameTurn.BLACK,
+                                                 type=PieceType.PAWN,
+                                                 index=col)
                 if row == 1:
-                    self.board[row][col] = Piece('white', 'pawn', col)
+                    self.board[row][col] = Piece(colour=GameTurn.WHITE,
+                                                 type=PieceType.PAWN,
+                                                 index=col)
                 if row == 0:
-                    self.board[row][col] = Piece('white', MAJOUR_PIECES[col],
-                                                 INDEX_MAJOUR_PIECES[col])
+                    self.board[row][col] = Piece(colour=GameTurn.WHITE,
+                                                 type=MAJOUR_PIECES[col],
+                                                 index=INDEX_MAJOUR_PIECES[col])
 
     def is_valid_position(self, position: str) -> bool:
         """Check if square called is a valid position in the board."""
         return position in ALLOWED_POSITIONS
 
-    def position_to_index(self, position: str) -> tuple:
+    def position_to_index(self, position: str) -> tuple[int, int]:
         """Converts position 'a2' to index (0,1)"""
         index = list(position)
         index_char = SQUARE_TO_INDEX.get(index[0])
@@ -57,30 +68,34 @@ class Board:
 
     def get_piece(self, position: str) -> Piece | None:
         """Gets piece from square"""
-        sq_index = self.position_to_index(position)
+        sq_index = self.position_to_index(position=position)
         return self.board[int(sq_index[0])][int(sq_index[1])]
 
-    def set_piece(self, position: str, piece) -> None:
+    def set_piece(self, position: str, piece: Piece | None) -> None:
         """Sets a piece into a position"""
-        position_index: list = self.position_to_index(position)
+        position_index: list = self.position_to_index(position=position)
         self.board[position_index[0]][position_index[1]] = piece
 
-    def move_piece(self, start, end) -> None:
+    def move_piece(self, start: str, end: str) -> None:
         """Moves a piece from a start to an end position"""
-        piece = self.get_piece(start)
+        piece = self.get_piece(position=start)
         if piece is None:
             raise HTTPException(status_code=400, detail="No piece found on start square.")
-        self.set_piece(start, None)
-        self.set_piece(end, piece)
+        self.set_piece(position=start, piece=None)
+        self.set_piece(position=end, piece=piece)
 
-    def to_dict(self) -> None:
+    def to_dict(self) -> list[list[dict[str, str | int] | None]]:
         """Converts board into a dict of elements None or Piece"""
         board_list: list = []
         rows: list = []
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 if self.board[row][col] is not None:
-                    rows.append(self.board[row][col].__dict__)
+                    rows.append({
+                        'colour': self.board[row][col].colour,
+                        'type': self.board[row][col].type.value,
+                        'index': self.board[row][col].index,
+                    })
                 else:
                     rows.append(None)
             board_list.append(rows)

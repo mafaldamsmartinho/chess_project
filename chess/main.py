@@ -5,5 +5,5 @@ from fastapi.staticfiles import StaticFiles
 
 create_tables()
 api = FastAPI()
-api.include_router(router)
-api.mount("/ui", StaticFiles(directory="frontend", html=True), name="frontend")
+api.include_router(router=router)
+api.mount(path="/ui", app=StaticFiles(directory="frontend", html=True), name="frontend")

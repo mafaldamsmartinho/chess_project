@@ -2,6 +2,12 @@ from pydantic import BaseModel
 from typing import Any
 
 
+class PieceData(BaseModel):
+    colour: str
+    type: str
+    index: int
+
+
 class CreateGameRequest(BaseModel):
     white_player: str
     is_bot_white: bool

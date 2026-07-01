@@ -10,11 +10,14 @@ from fastapi import HTTPException
 
 def play_move(start: str, end: str, game_id: int) -> dict[str, list[list[dict[str, str | int] | None]]]:
     game_data = get_game_by_id(game_id=game_id)
-    game = Game(turn=game_data["turn"],
-                status=game_data["status"])
-    game.set_board(board=deserialize_board(data=game_data["board"]))
+    game = Game(turn=game_data[4],
+                status=game_data[3])
+    game.set_board(board=deserialize_board(data=game_data[5]))
 
     piece: Piece = game.board.get_piece(position=start)
+    if piece is None:
+        raise HTTPException(status_code=400, detail='No piece found on start square.')
+
     captured_piece = game.board.get_piece(position=end)
     move_number = next_move_number(game_id=game_id)
 

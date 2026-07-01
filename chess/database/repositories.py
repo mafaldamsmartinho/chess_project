@@ -1,4 +1,4 @@
-from chess.database.connection import get_connection
+from chess.database.db_manager import get_connection, release_connection
 
 
 def create_tables() -> None:
@@ -12,4 +12,4 @@ def create_tables() -> None:
     cur.execute(schema)
     conn.commit()
     cur.close()
-    conn.close()
+    release_connection(conn=conn)

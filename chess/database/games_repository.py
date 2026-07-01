@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import HTTPException
 from psycopg2.extras import Json
 
-from chess.database.connection import get_connection
+from chess.database.db_manager import get_connection, release_connection
 from chess.models.enums import GameStatus, GameTurn
 from chess.models.board import Board
 from chess.utils.serialization import serialize_board
@@ -11,8 +11,8 @@ from chess.utils.serialization import serialize_board
 
 def create_game(white_id: int, black_id: int, board_state: Board) -> int:
     """Create new game"""
-    conn = get_connection()
-    cur = conn.cursor()
+    pool_conn = get_connection()
+    cur = pool_conn.cursor()
     board_dict: Json = serialize_board(board=board_state)
     cur.execute("""--sql
                 INSERT INTO games (white_id, black_id, status, turn, board)
@@ -21,16 +21,16 @@ def create_game(white_id: int, black_id: int, board_state: Board) -> int:
                                    GameTurn.WHITE.value, board_dict,))
 
     game_id = cur.fetchone()[0]
-    conn.commit()
+    pool_conn.commit()
     cur.close()
-    conn.close()
+    release_connection(conn=pool_conn)
     return game_id
 
 
 def get_game_by_id(game_id: int) -> tuple[int, int, int, str, str, Any]:
     """Returns game details from DB"""
-    conn = get_connection()
-    cur = conn.cursor()
+    pool_conn = get_connection()
+    cur = pool_conn.cursor()
     cur.execute("""--sql
                 SELECT * FROM games WHERE id = %s""", (game_id,))
 
@@ -39,14 +39,14 @@ def get_game_by_id(game_id: int) -> tuple[int, int, int, str, str, Any]:
         raise HTTPException(status_code=404, detail=f'error DB: Game id {game_id} not found')
 
     cur.close()
-    conn.close()
+    release_connection(conn=pool_conn)
     return game_data
 
 
 def update_game(game_id: int, current_turn: GameTurn | str, status: GameStatus | str, board_state: list[list[dict[str, str | int] | None]]) -> tuple[int, int, int, str, str, Any]:
     """Updates game status, turn and board current state in DB"""
-    conn = get_connection()
-    cur = conn.cursor()
+    pool_conn = get_connection()
+    cur = pool_conn.cursor()
     current_turn_value = GameTurn(current_turn).value
     status_value = GameStatus(status).value
     cur.execute("""--sql
@@ -56,16 +56,16 @@ def update_game(game_id: int, current_turn: GameTurn | str, status: GameStatus |
                 board = %s
                 WHERE id = %s;""",
                 (current_turn_value, status_value, Json(board_state), game_id,))
-    conn.commit()
+    pool_conn.commit()
     cur.close()
-    conn.close()
+    release_connection(conn=pool_conn)
     return
 
 
 def get_active_bot_game_ids() -> list[int] | None:
     """Returns all active games where bots are playing"""
-    conn = get_connection()
-    cur = conn.cursor()
+    pool_conn = get_connection()
+    cur = pool_conn.cursor()
     cur.execute("""--sql
                     SELECT g.id
                     FROM games g
@@ -85,5 +85,5 @@ def get_active_bot_game_ids() -> list[int] | None:
         bot_games.append(el[0])
 
     cur.close()
-    conn.close()
+    release_connection(conn=pool_conn)
     return bot_games

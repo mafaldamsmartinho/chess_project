@@ -1,4 +1,4 @@
-from chess.database.connection import get_connection
+from chess.database.db_manager import get_connection, release_connection
 
 
 def save_move(game_id: int, move_number: int, start: str, end: str, piece: str, captured_piece: str | None) -> int:
@@ -19,7 +19,7 @@ def save_move(game_id: int, move_number: int, start: str, end: str, piece: str, 
 
     conn.commit()
     cur.close()
-    conn.close()
+    release_connection(conn=conn)
     return move_id
 
 
@@ -35,5 +35,5 @@ def get_moves_by_game_id(game_id: int) -> list[tuple[int, int, int, str, str, st
         return []
 
     cur.close()
-    conn.close()
+    release_connection(conn=conn)
     return move_data

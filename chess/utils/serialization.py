@@ -14,8 +14,8 @@ def deserialize_board(data: list[list[dict[str, str | int] | None]]) -> Board:
     board = Board()
     for i, row in enumerate(data):
         for j, el in enumerate(row):
-            piece_data = PieceData(**el)  # pydantic instantiation
             if el is not None:
+                piece_data = PieceData(**el)  # pydantic instantiation
                 board.board[i][j] = Piece(colour=piece_data.colour,
                                           type=piece_data.type,
                                           index=piece_data.index)

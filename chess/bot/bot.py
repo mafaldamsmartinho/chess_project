@@ -49,11 +49,10 @@ class Bot:
 
     def expose_pieces_points(self, game: Game) -> int:
         """Removes points for exposing pieces"""
-        temp_game = copy.deepcopy(game)
-        temp_game.switch_turn()
-        possible_opponent_moves = self.list_possible_moves(game=temp_game)
+        game.switch_turn()
+        possible_opponent_moves = self.list_possible_moves(game=game)
         for el in possible_opponent_moves:
-            end_position = temp_game.board.get_piece(position=el["end_square"])
+            end_position = game.board.get_piece(position=el["end_square"])
             exposed_points = 0
             if end_position is not None:
                 if end_position.type == PieceType.QUEEN:
@@ -66,6 +65,7 @@ class Bot:
                     exposed_points -= 2
                 elif end_position.type == PieceType.PAWN:
                     exposed_points -= 1
+        game.switch_turn()
         return exposed_points
 
     def pieces_protected(self, game: Game) -> int:
@@ -86,10 +86,11 @@ class Bot:
         bot_moves = self.list_possible_moves(game=game)
         for move in bot_moves:
             kill_points = self.kill_piece_points(game=game, end=move["end_square"])
-            temp_game = copy.deepcopy(game)
-            temp_game.board.move_piece(start=move["start_square"],
-                                            end=move["end_square"])
-            move["score"] = self.score_move(game=temp_game, kill_points=kill_points)
+            game.board.move_piece(start=move["start_square"],
+                                  end=move["end_square"])
+            move["score"] = self.score_move(game=game, kill_points=kill_points)
+            game.board.move_piece(start=move["end_square"],
+                                  end=move["start_square"])
         return bot_moves
 
     def score_move(self, game: Game, kill_points: int):

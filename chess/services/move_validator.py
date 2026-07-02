@@ -1,4 +1,4 @@
-from chess.models.board import Board, ALLOWED_POSITIONS
+from chess.models.board import Board, NUM_COLS, NUM_ROWS
 from chess.models.enums import GameTurn, PieceType
 from chess.models.piece import Piece
 from chess.models.game import Game
@@ -6,12 +6,21 @@ from chess.utils.game_state import split_opponents
 import copy
 
 
-def is_legal_move(game: Game, start: str, end: str) -> bool:
+def get_position_index(board: Board, position: str | tuple[int, int]) -> tuple[int, int]:
+    """Returns a board index from either a string square or index tuple."""
+    if isinstance(position, str):
+        return board.position_to_index(position=position)
+    return position
+
+
+def is_legal_move(game: Game, start_position: str | tuple[int, int], end_position: str | tuple[int, int]) -> bool:
     """Checks if king will be in check after this move"""
     temp_game = copy.deepcopy(game)
-    if not is_valid_move(board=temp_game.board, start=start, end=end, current_turn=game.turn):
+    start_position = get_position_index(board=temp_game.board, position=start_position)
+    end_position = get_position_index(board=temp_game.board, position=end_position)
+    if not is_valid_move(board=temp_game.board, start_position=start_position, end_position=end_position, current_turn=game.turn):
         return False
-    temp_game.board.move_piece(start=start, end=end)
+    temp_game.board.move_piece(start=start_position, end=end_position)
     if is_king_in_check(board=temp_game.board, king_turn=game.turn):
         return False
     return True
@@ -24,12 +33,14 @@ def is_king_in_check_mate(game: Game, current_turn: GameTurn | str) -> bool:
     return False
 
 
-def get_king_position(board: Board, current_turn: GameTurn | str) -> str:
-    """Check where current turn king is returns in a5 format"""
-    for el in ALLOWED_POSITIONS:
-        piece = board.get_piece(position=el)
-        if piece is not None and piece.type == PieceType.KING and piece.colour == current_turn:
-            return el
+def get_king_position(board: Board, current_turn: GameTurn | str) -> tuple[int, int]:
+    """Check where current turn king is and return its index position."""
+    for row in range(NUM_ROWS):
+        for col in range(NUM_COLS):
+            el = (row, col)
+            piece = board.get_piece_by_index(index_position=el)
+            if piece is not None and piece.type == PieceType.KING and piece.colour == current_turn:
+                return el
 
 
 def is_king_in_check(board: Board, king_turn: GameTurn | str) -> bool:
@@ -39,29 +50,33 @@ def is_king_in_check(board: Board, king_turn: GameTurn | str) -> bool:
     next_turn = GameTurn.WHITE
     if king_turn == GameTurn.WHITE:
         next_turn = GameTurn.BLACK
-    for el in ALLOWED_POSITIONS:
-        piece = board.get_piece(position=el)
-        if piece is not None and piece.colour == next_turn:
-            if is_valid_move(board=board, start=el, end=king_position, current_turn=next_turn):
-                return True
+    for row in range(NUM_ROWS):
+        for col in range(NUM_COLS):
+            el = (row, col)
+            piece = board.get_piece_by_index(index_position=el)
+            if piece is not None and piece.colour == next_turn:
+                if is_valid_move(board=board, start_position=el, end_position=king_position, current_turn=next_turn):
+                    return True
     return False
 
 
 def is_any_move_legal(game: Game) -> bool:
     """Checks if any current turn pieces can be moved"""
     start_positions, end_positions = split_opponents(game=game)
-    for start in start_positions:
-        for end in end_positions:
-            if is_legal_move(game=game, start=start, end=end):
+    for start_position in start_positions:
+        for end_position in end_positions:
+            if is_legal_move(game=game, start_position=start_position, end_position=end_position):
                 return True
     return False
 
 
-def is_valid_move(board: Board, start: str, end: str, current_turn: GameTurn | str) -> bool:
+def is_valid_move(board: Board, start_position: str | tuple[int, int], end_position: str | tuple[int, int], current_turn: GameTurn | str) -> bool:
     """Global check if move is valid accosding with piece rules"""
     current_turn = GameTurn(current_turn)
-    start_sq_piece: Piece = board.get_piece(position=start)
-    end_sq_piece: Piece = board.get_piece(position=end)
+    start_position = get_position_index(board=board, position=start_position)
+    end_position = get_position_index(board=board, position=end_position)
+    start_sq_piece: Piece | None = board.get_piece_by_index(index_position=start_position)
+    end_sq_piece: Piece | None = board.get_piece_by_index(index_position=end_position)
 
     if end_sq_piece is not None:  # Check if captured piece is opposite turn
         if end_sq_piece.colour == current_turn:
@@ -73,32 +88,30 @@ def is_valid_move(board: Board, start: str, end: str, current_turn: GameTurn | s
 
     match start_sq_piece.type:
         case PieceType.PAWN:
-            if not validate_pawn_move(board=board, start=start, end=end):
+            if not validate_pawn_move(board=board, start_position=start_position, end_position=end_position):
                 return False
         case PieceType.ROOK:
-            if not validate_rook_move(board=board, start=start, end=end):
+            if not validate_rook_move(board=board, start_position=start_position, end_position=end_position):
                 return False
         case PieceType.KNIGHT:
-            if not validate_knight_move(board=board, start=start, end=end):
+            if not validate_knight_move(board=board, start_position=start_position, end_position=end_position):
                 return False
         case PieceType.BISHOP:
-            if not validate_bishop_move(board=board, start=start, end=end):
+            if not validate_bishop_move(board=board, start_position=start_position, end_position=end_position):
                 return False
         case PieceType.QUEEN:
-            if not validate_queen_move(board=board, start=start, end=end):
+            if not validate_queen_move(board=board, start_position=start_position, end_position=end_position):
                 return False
         case PieceType.KING:
-            if not validate_king_move(board=board, start=start, end=end):
+            if not validate_king_move(board=board, start_position=start_position, end_position=end_position):
                 return False
     if start_sq_piece.type == PieceType.KNIGHT:
         return True
-    return is_path_clear(board=board, start=start, end=end)
+    return is_path_clear(board=board, start_position=start_position, end_position=end_position)
 
 
-def is_path_clear(board: Board, start: str, end: str) -> bool:
+def is_path_clear(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
     """Check if path between start and end is clear"""
-    start_position: list = board.position_to_index(position=start)
-    end_position: list = board.position_to_index(position=end)
     row_diff = end_position[0] - start_position[0]
     col_diff = end_position[1] - start_position[1]
 
@@ -121,13 +134,7 @@ def is_path_clear(board: Board, start: str, end: str) -> bool:
                          col_step=col_step)
 
 
-def check_squares(
-    board: Board,
-    start_position: tuple[int, int],
-    end_position: tuple[int, int],
-    row_step: int,
-    col_step: int,
-) -> bool:
+def check_squares(board: Board, start_position: tuple[int, int], end_position: tuple[int, int], row_step: int, col_step: int) -> bool:
     """Checks if squares from start to end and specific direction are empty"""
     row = start_position[0] + row_step
     col = start_position[1] + col_step
@@ -144,35 +151,31 @@ def check_squares(
     return True
 
 
-def validate_pawn_move(board: Board, start: str, end: str) -> bool:
+def validate_pawn_move(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
     """"Check if pawn move is valid according with colour."""
-    start_position = board.position_to_index(position=start)
-    end_position = board.position_to_index(position=end)
-    start_piece: Piece = board.get_piece(position=start)
+    start_piece: Piece = board.get_piece_by_index(index_position=start_position)
     if start_piece.colour == GameTurn.WHITE:
-        if board.get_piece(position=end) is None and end_position[0] - start_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0:  # checks if pawn is moving one square on the same column.
+        if board.get_piece_by_index(index_position=end_position) is None and end_position[0] - start_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0:  # checks if pawn is moving one square on the same column.
             return True
-        elif board.get_piece(position=end) is None and end_position[0] - start_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6):  # checks if pawn is moving for first time. 2 squares on the same column.
+        elif board.get_piece_by_index(index_position=end_position) is None and end_position[0] - start_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6):  # checks if pawn is moving for first time. 2 squares on the same column.
             return True
-        elif board.get_piece(position=end) is not None and end_position[0] - start_position[0] == 1 and abs(end_position[1] - start_position[1]) == 1:  # checks if pawn has opponent piece in diagonal.
+        elif board.get_piece_by_index(index_position=end_position) is not None and end_position[0] - start_position[0] == 1 and abs(end_position[1] - start_position[1]) == 1:  # checks if pawn has opponent piece in diagonal.
             return True
         else:
             return False
     elif start_piece.colour == GameTurn.BLACK:
-        if board.get_piece(position=end) is None and start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0:  # checks if pawn is moving one square on the same column.
+        if board.get_piece_by_index(index_position=end_position) is None and start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 0:  # checks if pawn is moving one square on the same column.
             return True
-        elif board.get_piece(position=end) is None and start_position[0] - end_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6):  # checks if pawn is moving for first time. 2 squares on the same column.
+        elif board.get_piece_by_index(index_position=end_position) is None and start_position[0] - end_position[0] == 2 and abs(start_position[1] - end_position[1]) == 0 and (start_position[0] == 1 or start_position[0] == 6):  # checks if pawn is moving for first time. 2 squares on the same column.
             return True
-        elif board.get_piece(position=end) is not None and start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 1:  # checks if pawn has opponent piece in diagonal.
+        elif board.get_piece_by_index(index_position=end_position) is not None and start_position[0] - end_position[0] == 1 and abs(start_position[1] - end_position[1]) == 1:  # checks if pawn has opponent piece in diagonal.
             return True
         else:
             return False
 
 
-def validate_rook_move(board: Board, start: str, end: str) -> bool:
+def validate_rook_move(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
     """Checks if rook move is valid."""
-    start_position = board.position_to_index(position=start)
-    end_position = board.position_to_index(position=end)
     if abs(start_position[0] - end_position[0]) != 0 and abs(start_position[1] - end_position[1]) == 0:  # Horizontal move
         return True
     elif abs(start_position[0] - end_position[0]) == 0 and abs(start_position[1] - end_position[1]) != 0:  # Vertical move
@@ -181,10 +184,8 @@ def validate_rook_move(board: Board, start: str, end: str) -> bool:
         return False
 
 
-def validate_knight_move(board: Board, start: str, end: str) -> bool:
+def validate_knight_move(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
     """Checks if Knigth move is valid."""
-    start_position = board.position_to_index(position=start)
-    end_position = board.position_to_index(position=end)
     if abs(start_position[0] - end_position[0]) == 2 and abs(start_position[1] - end_position[1]) == 1:
         return True
     elif abs(start_position[0] - end_position[0]) == 1 and abs(start_position[1] - end_position[1]) == 2:
@@ -193,17 +194,13 @@ def validate_knight_move(board: Board, start: str, end: str) -> bool:
         return False
 
 
-def validate_bishop_move(board: Board, start: str, end: str) -> bool:
+def validate_bishop_move(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
     """Checks if bishop move is valid."""
-    start_position = board.position_to_index(position=start)
-    end_position = board.position_to_index(position=end)
     return abs(start_position[0] - end_position[0]) == abs(start_position[1] - end_position[1])
 
 
-def validate_queen_move(board: Board, start: str, end: str) -> bool:
+def validate_queen_move(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
     """Checks if queen move is valid."""
-    start_position = board.position_to_index(position=start)
-    end_position = board.position_to_index(position=end)
     if abs(start_position[0] - end_position[0]) == abs(start_position[1] - end_position[1]):
         return True
     elif abs(start_position[0] - end_position[0]) != 0 and abs(start_position[1] - end_position[1]) == 0:
@@ -214,10 +211,8 @@ def validate_queen_move(board: Board, start: str, end: str) -> bool:
         return False
 
 
-def validate_king_move(board: Board, start: str, end: str) -> bool:
+def validate_king_move(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
     """Checks if king move is valid."""
-    start_position = board.position_to_index(position=start)
-    end_position = board.position_to_index(position=end)
     if abs(start_position[0] - end_position[0]) == 1 and abs(start_position[1] - end_position[1]) == 0:
         return True
     elif abs(start_position[0] - end_position[0]) == 1 and abs(start_position[1] - end_position[1]) == 1:

@@ -14,5 +14,7 @@ def bot_play_move(game_id: int) -> MessageResponse:
 
     bot = Bot()
     bot_start, bot_end = bot.choose_move(game=game)
+    bot_start = game.board.index_to_position(index_position=bot_start)
+    bot_end = game.board.index_to_position(index_position=bot_end)
     play_move_call(game_id=game_id, start=bot_start, end=bot_end)
     return

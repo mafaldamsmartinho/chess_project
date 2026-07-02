@@ -27,8 +27,10 @@ def play_move(start: str, end: str, game_id: int) -> dict[str, list[list[dict[st
     if game.status != GameStatus.ONGOING:
         raise HTTPException(status_code=400, detail='This game has ended.')
 
-    if is_legal_move(game=game, start=start, end=end):  # Checks if user wants to perform a valid move according with all rules.
-        game.board.move_piece(start=start, end=end)
+    if is_legal_move(game=game, start_position=start, end_position=end):  # Checks if user wants to perform a valid move according with all rules.
+        start_position = game.board.position_to_index(position=start)
+        end_position = game.board.position_to_index(position=end)
+        game.board.move_piece(start=start_position, end=end_position)
         game.switch_turn()  # Switch player turn
         if is_king_in_check_mate(game=game, current_turn=game.turn):  # Check if next player king is in check mate
             if game.turn == GameTurn.WHITE:

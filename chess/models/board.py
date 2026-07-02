@@ -59,6 +59,10 @@ class Board:
         """Check if square called is a valid position in the board."""
         return position in ALLOWED_POSITIONS
 
+    def is_valid_position_index(self, index_position: tuple) -> bool:
+        row, col = index_position
+        return (0 <= row < NUM_ROWS and 0 <= col < NUM_COLS)
+
     def position_to_index(self, position: str) -> tuple[int, int]:
         """Converts position 'a2' to index (0,1)"""
         index = list(position)
@@ -66,23 +70,29 @@ class Board:
         index_num = int(index[1]) - 1
         return (index_num, index_char)
 
+    def index_to_position(self, index_position: tuple[int, int]) -> str:
+        """Converts index (0, 1) to position 'b1'."""
+        row, col = index_position
+        return f'{LAST_ROW[col + 1]}{row + 1}'
+
     def get_piece(self, position: str) -> Piece | None:
         """Gets piece from square"""
         sq_index = self.position_to_index(position=position)
         return self.board[int(sq_index[0])][int(sq_index[1])]
 
-    def set_piece(self, position: str, piece: Piece | None) -> None:
-        """Sets a piece into a position"""
-        position_index: list = self.position_to_index(position=position)
-        self.board[position_index[0]][position_index[1]] = piece
+    def get_piece_by_index(self, index_position: tuple) -> Piece | None:
+        """Gets piece from square index (0,1)"""
+        return self.board[index_position[0]][index_position[1]]
 
-    def move_piece(self, start: str, end: str) -> None:
+    def set_piece(self, index_position: tuple, piece: Piece | None) -> None:
+        """Sets a piece into a position"""
+        self.board[index_position[0]][index_position[1]] = piece
+
+    def move_piece(self, start: tuple, end: tuple) -> None:
         """Moves a piece from a start to an end position"""
-        piece = self.get_piece(position=start)
-        if piece is None:
-            raise HTTPException(status_code=400, detail="No piece found on start square.")
-        self.set_piece(position=start, piece=None)
-        self.set_piece(position=end, piece=piece)
+        piece = self.get_piece_by_index(index_position=start)
+        self.set_piece(index_position=start, piece=None)
+        self.set_piece(index_position=end, piece=piece)
 
     def to_dict(self) -> list[list[dict[str, str | int] | None]]:
         """Converts board into a dict of elements None or Piece"""

@@ -12,7 +12,7 @@ def bot_loop() -> None:
             bot_play_move(game_id=game_id)
             logger.info('Bot move played successfully')
             logger.info(time.perf_counter() - initial_time)
-        time.sleep(2)
+        time.sleep(10)
 
 
 if __name__ == "__main__":

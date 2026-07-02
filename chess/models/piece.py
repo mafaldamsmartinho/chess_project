@@ -1,13 +1,17 @@
-class Piece:
-    ALLOWED_COLOURS = {'black', 'white'}
-    ALLOWED_PIECES = {'pawn', 'rook', 'knight', 'bishop', 'queen', 'king'}
+from chess.models.enums import GameTurn, PieceType
 
-    def __init__(self, colour: str, type: str, index: int) -> None:
+
+class Piece:
+    ALLOWED_COLOURS = {GameTurn.BLACK.value, GameTurn.WHITE.value}
+    ALLOWED_PIECES = {piece_type.value for piece_type in PieceType}
+
+    def __init__(self, colour: GameTurn | str, type: PieceType | str, index: int) -> None:
         if colour not in self.ALLOWED_COLOURS:
             raise ValueError(f'Colour {colour} not available')
-        self.colour = colour
+        self.colour = GameTurn(colour).value
 
-        if type not in self.ALLOWED_PIECES:
+        try:
+            self.type = PieceType(type)
+        except ValueError:
             raise ValueError(f'type {type} not available')
-        self.type = type
         self.index = index

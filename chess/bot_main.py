@@ -1,16 +1,18 @@
-from chess.bot.client import get_bot_games_call
+from chess.bot.client import get_active_bot_game_ids_call
 from chess.bot.bot_service import bot_play_move
-from chess.models.chess_logger import logger
+from chess.utils.chess_logger import logger
 import time
 
 
-def bot_loop():
+def bot_loop() -> None:
     while True:
-        bot_games = get_bot_games_call()
+        bot_games = get_active_bot_game_ids_call()
         for game_id in bot_games:
-            bot_play_move(game_id)
+            initial_time = time.perf_counter()
+            bot_play_move(game_id=game_id)
             logger.info('Bot move played successfully')
-        time.sleep(2)
+            logger.info(time.perf_counter() - initial_time)
+        time.sleep(10)
 
 
 if __name__ == "__main__":

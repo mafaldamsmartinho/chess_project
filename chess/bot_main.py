@@ -2,17 +2,34 @@ from chess.bot.client import get_active_bot_game_ids_call
 from chess.bot.bot_service import bot_play_move
 from chess.utils.chess_logger import logger
 import time
+import cProfile
+import signal
+import sys
+
+pr = cProfile.Profile()
+pr.enable()
+
+
+def handle_sigterm(signum, frame):
+    pr.disable()
+    pr.dump_stats(f"snakeviz/{round(time.perf_counter())}example_profiling.prof")
+    print("Received SIGTERM...")
+    sys.exit(0)
+
+
+signal.signal(signal.SIGTERM, handle_sigterm)
+signal.signal(signal.SIGINT, handle_sigterm)
 
 
 def bot_loop() -> None:
     while True:
         bot_games = get_active_bot_game_ids_call()
-        for game_id in bot_games:
-            initial_time = time.perf_counter()
-            bot_play_move(game_id=game_id)
-            logger.info('Bot move played successfully')
-            logger.info(time.perf_counter() - initial_time)
-        time.sleep(10)
+        if bot_games is not None:
+            for game_id in bot_games:
+                initial_time = time.perf_counter()
+                bot_play_move(game_id=game_id)
+                logger.info('Bot move played successfully')
+                logger.info(time.perf_counter() - initial_time)
 
 
 if __name__ == "__main__":

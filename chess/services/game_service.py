@@ -32,7 +32,7 @@ def play_move(start: str, end: str, game_id: int) -> dict[str, list[list[dict[st
         end_position = game.board.position_to_index(position=end)
         game.board.move_piece(start=start_position, end=end_position)
         game.switch_turn()  # Switch player turn
-        if is_king_in_check_mate(game=game, current_turn=game.turn):  # Check if next player king is in check mate
+        if is_king_in_check_mate(game=game, current_turn=game.turn) or move_number > 100:  # Check if next player king is in check mate
             if game.turn == GameTurn.WHITE:
                 game.status = GameStatus.BLACK_WIN
             else:

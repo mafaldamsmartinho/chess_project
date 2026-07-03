@@ -1,6 +1,6 @@
 import requests
 from typing import Any
-from api.schemas import MessageResponse
+from chess.api.schemas import MessageResponse
 
 BASE_URL = "http://127.0.0.1:8000"
 

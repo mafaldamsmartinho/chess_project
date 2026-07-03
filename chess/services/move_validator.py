@@ -33,7 +33,7 @@ def is_king_in_check_mate(game: Game, current_turn: GameTurn | str) -> bool:
     return False
 
 
-def get_king_position(board: Board, current_turn: GameTurn | str) -> tuple[int, int]:
+def get_king_position(board: Board, current_turn: GameTurn | str) -> tuple[int, int] | None:
     """Check where current turn king is and return its index position."""
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
@@ -47,6 +47,8 @@ def is_king_in_check(board: Board, king_turn: GameTurn | str) -> bool:
     """Checks if king turn is in check"""
     king_turn = GameTurn(king_turn)
     king_position = get_king_position(board=board, current_turn=king_turn)
+    if king_position is None:
+        return False
     next_turn = GameTurn.WHITE
     if king_turn == GameTurn.WHITE:
         next_turn = GameTurn.BLACK
@@ -96,6 +98,7 @@ def is_valid_move(board: Board, start_position: str | tuple[int, int], end_posit
         case PieceType.KNIGHT:
             if not validate_knight_move(board=board, start_position=start_position, end_position=end_position):
                 return False
+            return True
         case PieceType.BISHOP:
             if not validate_bishop_move(board=board, start_position=start_position, end_position=end_position):
                 return False
@@ -105,8 +108,6 @@ def is_valid_move(board: Board, start_position: str | tuple[int, int], end_posit
         case PieceType.KING:
             if not validate_king_move(board=board, start_position=start_position, end_position=end_position):
                 return False
-    if start_sq_piece.type == PieceType.KNIGHT:
-        return True
     return is_path_clear(board=board, start_position=start_position, end_position=end_position)
 
 

@@ -79,7 +79,7 @@ def get_active_bot_game_ids() -> list[int] | None:
                     );""", (GameStatus.ONGOING.value, GameTurn.WHITE.value, GameTurn.BLACK.value,))
     games = cur.fetchall()
     if not games:
-        return None
+        return []
     bot_games = []
     for el in games:
         bot_games.append(el[0])

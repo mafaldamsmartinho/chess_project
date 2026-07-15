@@ -6,7 +6,9 @@ from chess.models.board import Board
 from chess.utils.serialization import SerializedBoard, serialize_board
 
 
-def create_game(white_id: int, black_id: int, board_state: Board, session: Session) -> int:
+def create_game(
+    white_id: int, black_id: int, board_state: Board, session: Session
+) -> int:
     """Create new game."""
     board_dict = serialize_board(board=board_state)
     game = Games(white_id=white_id, black_id=black_id, board=board_dict)
@@ -20,7 +22,13 @@ def get_game_by_id(game_id: int, session: Session) -> Games | None:
     return session.get(Games, game_id)
 
 
-def update_game(game_id: int, current_turn: GameTurn, status: GameStatus, board_state: SerializedBoard, session: Session) -> Games | None:
+def update_game(
+    game_id: int,
+    current_turn: GameTurn,
+    status: GameStatus,
+    board_state: SerializedBoard,
+    session: Session,
+) -> Games | None:
     """Updates game status, turn and board current state in DB."""
     game_data = session.get(Games, game_id)
     if game_data is None:

@@ -18,9 +18,9 @@ def get_active_bot_game_ids_call() -> list[int] | None:
 
 
 def play_move_call(game_id: int, start: str, end: str) -> dict[str, Any]:
-    response = requests.post(url=f"{BASE_URL}/games/{game_id}/move", json={
-        "start_square": start,
-        "end_square": end
-    })
+    response = requests.post(
+        url=f"{BASE_URL}/games/{game_id}/move",
+        json={"start_square": start, "end_square": end},
+    )
     response.raise_for_status()
     return response.json()

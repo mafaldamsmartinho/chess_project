@@ -15,7 +15,9 @@ class Base(MappedAsDataclass, DeclarativeBase):
 class Players(Base):
     __tablename__ = "players"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, init=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True, init=False
+    )
     name: Mapped[str] = mapped_column(Text, nullable=False)
     bot: Mapped[bool] = mapped_column(Boolean)
 
@@ -23,26 +25,38 @@ class Players(Base):
 class Games(Base):
     __tablename__ = "games"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, init=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True, init=False
+    )
     white_id: Mapped[int] = mapped_column(Integer)
     black_id: Mapped[int] = mapped_column(Integer)
     board: Mapped[SerializedBoard] = mapped_column(JSONB)
-    status: Mapped[GameStatus] = mapped_column(SQLEnum(GameStatus,
-                                               name="game_status_enum",
-                                               values_callable=lambda enum: [item.value for item in enum],),
-                                               nullable=False,
-                                               default=GameStatus.ONGOING,)
-    turn: Mapped[GameTurn] = mapped_column(SQLEnum(GameTurn,
-                                           name="game_turn_enum",
-                                           values_callable=lambda enum: [item.value for item in enum],),
-                                           nullable=False,
-                                           default=GameTurn.WHITE,)
+    status: Mapped[GameStatus] = mapped_column(
+        SQLEnum(
+            GameStatus,
+            name="game_status_enum",
+            values_callable=lambda enum: [item.value for item in enum],
+        ),
+        nullable=False,
+        default=GameStatus.ONGOING,
+    )
+    turn: Mapped[GameTurn] = mapped_column(
+        SQLEnum(
+            GameTurn,
+            name="game_turn_enum",
+            values_callable=lambda enum: [item.value for item in enum],
+        ),
+        nullable=False,
+        default=GameTurn.WHITE,
+    )
 
 
 class Moves(Base):
     __tablename__ = "moves"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, init=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True, init=False
+    )
     game_id: Mapped[int] = mapped_column(Integer)
     move_number: Mapped[int] = mapped_column(Integer)
     start_square: Mapped[str] = mapped_column(Text, nullable=False)

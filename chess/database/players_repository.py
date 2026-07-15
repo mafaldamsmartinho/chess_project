@@ -14,15 +14,13 @@ def create_player(name: str, bot: bool, session: Session) -> int:
 
 def get_player_id_by_name_and_bot(name: str, bot: bool, session: Session) -> int | None:
     """Checks if player already exists."""
-    statement = (
-        select(Players.id)
-        .where(Players.name == name)
-        .where(Players.bot == bot)
-    )
+    statement = select(Players.id).where(Players.name == name).where(Players.bot == bot)
     return session.scalar(statement)
 
 
-def get_players_by_game_id(game_id: int, session: Session) -> tuple[str, str, bool, bool] | None:
+def get_players_by_game_id(
+    game_id: int, session: Session
+) -> tuple[str, str, bool, bool] | None:
     """Get player ids from a game id."""
     white = aliased(Players)
     black = aliased(Players)

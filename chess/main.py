@@ -16,6 +16,7 @@ async def lifespan(api: FastAPI):
     finally:
         engine.dispose()
 
+
 api = FastAPI(lifespan=lifespan)
 api.include_router(router=router)
 api.mount(path="/ui", app=StaticFiles(directory="frontend", html=True), name="frontend")

@@ -3,8 +3,11 @@ from chess.models.enums import GameStatus, GameTurn
 
 
 class Game:
-
-    def __init__(self, turn: GameTurn | str = GameTurn.WHITE, status: GameStatus | str = GameStatus.ONGOING) -> None:
+    def __init__(
+        self,
+        turn: GameTurn | str = GameTurn.WHITE,
+        status: GameStatus | str = GameStatus.ONGOING,
+    ) -> None:
         """Initialises the game."""
         self.board = Board()
         self.turn = GameTurn(turn)

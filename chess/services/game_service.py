@@ -30,24 +30,46 @@ def play_move(start: str, end: str, game_id: int, session: Session) -> dict:
         if game.status != GameStatus.ONGOING:
             raise InvalidMoveError("This game has ended.")
 
-        if not is_legal_move(game=game, start_position=start, end_position=end):  # Checks if user wants to perform a valid move according with all rules.
+        if not is_legal_move(
+            game=game, start_position=start, end_position=end
+        ):  # Checks if user wants to perform a valid move according with all rules.
             raise InvalidMoveError("Ilegal Move.")
 
         captured_piece = game.board.get_piece(position=end)
         move_number = next_move_number(game_id=game_id, session=session)
 
-        game.board.move_piece(start=game.board.position_to_index(position=start), end=game.board.position_to_index(position=end))
+        game.board.move_piece(
+            start=game.board.position_to_index(position=start),
+            end=game.board.position_to_index(position=end),
+        )
         game.switch_turn()  # Switch player turn
-        if is_king_in_check_mate(game=game, current_turn=game.turn) or move_number > 100:  # Check if next player king is in check mate
+        if (
+            is_king_in_check_mate(game=game, current_turn=game.turn)
+            or move_number > 100
+        ):  # Check if next player king is in check mate
             if game.turn == GameTurn.WHITE:
                 game.status = GameStatus.BLACK_WIN
             else:
                 game.status = GameStatus.WHITE_WIN
             game.turn = GameTurn.FINISHED
-        save_move(game_id=game_id, move_number=move_number, start=start, end=end, piece=f"{piece.colour}_{piece.type.value}",
-                  captured_piece=f"{captured_piece.colour}_{captured_piece.type.value}" if captured_piece else None,
-                  session=session)
-        update_game(game_id=game_id, current_turn=game.turn, status=game.status, board_state=game.board.to_dict(), session=session)
+        save_move(
+            game_id=game_id,
+            move_number=move_number,
+            start=start,
+            end=end,
+            piece=f"{piece.colour}_{piece.type.value}",
+            captured_piece=f"{captured_piece.colour}_{captured_piece.type.value}"
+            if captured_piece
+            else None,
+            session=session,
+        )
+        update_game(
+            game_id=game_id,
+            current_turn=game.turn,
+            status=game.status,
+            board_state=game.board.to_dict(),
+            session=session,
+        )
         session.commit()
         return {"board": game.board.to_dict()}
 
@@ -62,4 +84,3 @@ def next_move_number(game_id: int, session: Session) -> int:
         select(func.max(Moves.move_number)).where(Moves.game_id == game_id)
     )
     return 1 if last_move_number is None else last_move_number + 1
-

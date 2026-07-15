@@ -1,11 +1,11 @@
-from chess.database.models import Moves
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from chess.database.models import Moves
+
 
 def save_move(game_id: int, move_number: int, start: str, end: str, piece: str, captured_piece: str | None, session: Session) -> int:
-    """Adds new move into DB"""
+    """Adds new move into DB."""
     move = Moves(game_id=game_id, move_number=move_number,
                  start_square=start, end_square=end, piece=piece,
                  captured_piece=captured_piece)

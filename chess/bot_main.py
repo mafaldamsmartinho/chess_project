@@ -1,11 +1,12 @@
-from chess.bot.client import get_active_bot_game_ids_call
-from chess.bot.bot_service import bot_play_move
-from chess.utils.chess_logger import logger
-import time
 import cProfile
+import datetime
 import signal
 import sys
-import datetime
+import time
+
+from chess.bot.bot_service import bot_play_move
+from chess.bot.client import get_active_bot_game_ids_call
+from chess.utils.chess_logger import logger
 
 pr = cProfile.Profile()
 pr.enable()
@@ -30,7 +31,7 @@ def bot_loop() -> None:
             for game_id in bot_games:
                 initial_time = time.perf_counter()
                 bot_play_move(game_id=game_id)
-                logger.info('Bot move played successfully')
+                logger.info("Bot move played successfully")
                 logger.info(time.perf_counter() - initial_time)
 
 

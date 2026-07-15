@@ -1,9 +1,10 @@
-from chess.models.board import Board, NUM_COLS, NUM_ROWS
-from chess.models.enums import GameTurn, PieceType
-from chess.models.piece import Piece
-from chess.models.game import Game
-from chess.utils.game_state import split_opponents
 import copy
+
+from chess.models.board import NUM_COLS, NUM_ROWS, Board
+from chess.models.enums import GameTurn, PieceType
+from chess.models.game import Game
+from chess.models.piece import Piece
+from chess.utils.game_state import split_opponents
 
 
 def get_position_index(board: Board, position: str | tuple[int, int]) -> tuple[int, int]:
@@ -14,7 +15,7 @@ def get_position_index(board: Board, position: str | tuple[int, int]) -> tuple[i
 
 
 def is_legal_move(game: Game, start_position: str | tuple[int, int], end_position: str | tuple[int, int]) -> bool:
-    """Checks if king will be in check after this move"""
+    """Checks if king will be in check after this move."""
     temp_game = copy.deepcopy(game)
     start_position = get_position_index(board=temp_game.board, position=start_position)
     end_position = get_position_index(board=temp_game.board, position=end_position)
@@ -27,7 +28,7 @@ def is_legal_move(game: Game, start_position: str | tuple[int, int], end_positio
 
 
 def is_king_in_check_mate(game: Game, current_turn: GameTurn | str) -> bool:
-    """Check if king is in check and no piece move is valid"""
+    """Check if king is in check and no piece move is valid."""
     if is_king_in_check(board=game.board, king_turn=current_turn) and not is_any_move_legal(game=game):
         return True
     return False
@@ -44,7 +45,7 @@ def get_king_position(board: Board, current_turn: GameTurn | str) -> tuple[int, 
 
 
 def is_king_in_check(board: Board, king_turn: GameTurn | str) -> bool:
-    """Checks if king turn is in check"""
+    """Checks if king turn is in check."""
     king_turn = GameTurn(king_turn)
     king_position = get_king_position(board=board, current_turn=king_turn)
     if king_position is None:
@@ -63,7 +64,7 @@ def is_king_in_check(board: Board, king_turn: GameTurn | str) -> bool:
 
 
 def is_any_move_legal(game: Game) -> bool:
-    """Checks if any current turn pieces can be moved"""
+    """Checks if any current turn pieces can be moved."""
     start_positions, end_positions = split_opponents(game=game)
     for start_position in start_positions:
         for end_position in end_positions:
@@ -73,7 +74,7 @@ def is_any_move_legal(game: Game) -> bool:
 
 
 def is_valid_move(board: Board, start_position: str | tuple[int, int], end_position: str | tuple[int, int], current_turn: GameTurn | str) -> bool:
-    """Global check if move is valid accosding with piece rules"""
+    """Global check if move is valid accosding with piece rules."""
     current_turn = GameTurn(current_turn)
     start_position = get_position_index(board=board, position=start_position)
     end_position = get_position_index(board=board, position=end_position)
@@ -112,7 +113,7 @@ def is_valid_move(board: Board, start_position: str | tuple[int, int], end_posit
 
 
 def is_path_clear(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:
-    """Check if path between start and end is clear"""
+    """Check if path between start and end is clear."""
     row_diff = end_position[0] - start_position[0]
     col_diff = end_position[1] - start_position[1]
 
@@ -136,7 +137,7 @@ def is_path_clear(board: Board, start_position: tuple[int, int], end_position: t
 
 
 def check_squares(board: Board, start_position: tuple[int, int], end_position: tuple[int, int], row_step: int, col_step: int) -> bool:
-    """Checks if squares from start to end and specific direction are empty"""
+    """Checks if squares from start to end and specific direction are empty."""
     row = start_position[0] + row_step
     col = start_position[1] + col_step
     square = (row, col)

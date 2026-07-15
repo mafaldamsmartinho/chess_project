@@ -3,7 +3,7 @@ from chess.models.game import Game
 
 
 def split_opponents(game: Game) -> list[list[tuple[int, int]]]:
-    """Splits player turn pieces into one list, and the rest in another list"""
+    """Splits player turn pieces into one list, and the rest in another list."""
     start_positions: list = []
     end_positions: list = []
 

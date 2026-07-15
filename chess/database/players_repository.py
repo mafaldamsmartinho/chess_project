@@ -1,11 +1,11 @@
-from chess.database.models import Players, Games
-
 from sqlalchemy import select
-from sqlalchemy.orm import aliased, Session
+from sqlalchemy.orm import Session, aliased
+
+from chess.database.models import Games, Players
 
 
 def create_player(name: str, bot: bool, session: Session) -> int:
-    """Creates new player in DB and returns id"""
+    """Creates new player in DB and returns id."""
     player = Players(name=name, bot=bot)
     session.add(player)
     session.flush()
@@ -13,7 +13,7 @@ def create_player(name: str, bot: bool, session: Session) -> int:
 
 
 def get_player_id_by_name_and_bot(name: str, bot: bool, session: Session) -> int | None:
-    """Checks if player already exists"""
+    """Checks if player already exists."""
     statement = (
         select(Players.id)
         .where(Players.name == name)
@@ -23,7 +23,7 @@ def get_player_id_by_name_and_bot(name: str, bot: bool, session: Session) -> int
 
 
 def get_players_by_game_id(game_id: int, session: Session) -> tuple[str, str, bool, bool] | None:
-    """Get player ids from a game id"""
+    """Get player ids from a game id."""
     white = aliased(Players)
     black = aliased(Players)
 

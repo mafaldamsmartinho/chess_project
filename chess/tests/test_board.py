@@ -1,5 +1,6 @@
-from chess.models.board import Board
 import pytest
+
+from chess.models.board import Board
 
 
 class TestIsValidPosition:

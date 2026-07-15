@@ -22,3 +22,7 @@ ruff = "^0.15.21"
 [build.system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+lint.extend-select = ["D415"]
+lint.ignore = ["T201","E501"]

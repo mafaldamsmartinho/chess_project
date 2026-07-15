@@ -1,7 +1,7 @@
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, MappedAsDataclass
-from sqlalchemy import Integer, Text, Boolean
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Boolean, Integer, Text
 from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column
 
 from chess.models.enums import GameStatus, GameTurn
 from chess.utils.serialization import SerializedBoard

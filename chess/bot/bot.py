@@ -1,8 +1,17 @@
-from chess.services.move_validator import is_legal_move, is_king_in_check, validate_pawn_move, validate_rook_move, validate_bishop_move, validate_knight_move, validate_queen_move, validate_king_move
-from chess.utils.game_state import split_opponents
 from chess.models.enums import PieceType
 from chess.models.game import Game
 from chess.models.piece import Piece
+from chess.services.move_validator import (
+    is_king_in_check,
+    is_legal_move,
+    validate_bishop_move,
+    validate_king_move,
+    validate_knight_move,
+    validate_pawn_move,
+    validate_queen_move,
+    validate_rook_move,
+)
+from chess.utils.game_state import split_opponents
 
 
 class Bot:
@@ -11,7 +20,7 @@ class Bot:
         pass
 
     def list_possible_scored_moves(self, game: Game) -> list[dict]:
-        """Possible scored bot moves"""
+        """Possible scored bot moves."""
         scored_moves: list = []
         kill_points_dict: dict = {}
 
@@ -71,7 +80,7 @@ class Bot:
         return valid_piece_move
 
     def kill_piece_points(self, game: Game, end: tuple[int, int]) -> int:
-        """Gives points for if kills piece"""
+        """Gives points for if kills piece."""
         end_position_piece = game.board.get_piece_by_index(index_position=end)
         points = 0
         if end_position_piece is not None:
@@ -89,7 +98,7 @@ class Bot:
         return points
 
     def expose_pieces_points(self, game: Game, bot_virtual_position: tuple, end_positions: list) -> int:
-        """Removes points for exposing pieces"""
+        """Removes points for exposing pieces."""
         game.switch_turn()
         bot_virtual_piece = game.board.get_piece_by_index(index_position=bot_virtual_position)
         exposed_points = 0
@@ -122,7 +131,7 @@ class Bot:
         return points_check_opponent_king
 
     def pieces_protected(self, game: Game, bot_positions: list, end_positions: list) -> int:
-        """Checks if end square is protected"""
+        """Checks if end square is protected."""
         protected_points = 0
         # Loop through bot virtual positions and check if protected
         for protected_square in bot_positions:
@@ -148,7 +157,7 @@ class Bot:
         return protected_points
 
     def score_move(self, game: Game, start_position: tuple, end_position: tuple, kill_points: int) -> float:
-        """Adds the calculated score to each move dictionary"""
+        """Adds the calculated score to each move dictionary."""
         captured_piece = game.board.get_piece_by_index(index_position=end_position)
         game.board.move_piece(start=start_position,
                               end=end_position)
@@ -162,7 +171,7 @@ class Bot:
         return move_score
 
     def score_move_function(self, game: Game, start_position: tuple, end_position: tuple, kill_points: int) -> float:
-        """Scores bot move"""
+        """Scores bot move."""
         bot_positions, end_positions = split_opponents(game=game)
         points_possible_moves = self.number_of_possible_piece_moves(game=game,
                                                               piece_position=end_position,

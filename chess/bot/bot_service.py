@@ -1,11 +1,11 @@
-from chess.models.game import Game
 from chess.bot.bot import Bot
-from chess.utils.serialization import deserialize_board
 from chess.bot.client import get_game_by_id_call, play_move_call
+from chess.models.game import Game
+from chess.utils.serialization import deserialize_board
 
 
 def bot_play_move(game_id: int) -> None:
-    """Executes Bot move"""
+    """Executes Bot move."""
     game_data_bot = get_game_by_id_call(game_id=game_id)
     game = Game(turn=game_data_bot["turn"],
                 status=game_data_bot["status"])

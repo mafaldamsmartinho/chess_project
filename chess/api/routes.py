@@ -1,23 +1,35 @@
-from fastapi import APIRouter, HTTPException, Depends
-from chess.exceptions import InvalidMoveError, GameNotFoundError
-from chess.utils.chess_logger import logger
-
-from chess.database.connection import get_session
-from chess.database.games_repository import create_game, get_active_bot_game_ids, get_game_by_id
-from chess.database.players_repository import create_player, get_player_id_by_name_and_bot, get_players_by_game_id
-from chess.database.moves_repository import get_moves_by_game_id
-
-from chess.api.schemas import CreateGameRequest, MoveRequest, GameResponse, MessageResponse, MoveResponse
-from chess.services.game_service import play_move
-from chess.models.game import Game
-
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
+from chess.api.schemas import (
+    CreateGameRequest,
+    GameResponse,
+    MessageResponse,
+    MoveRequest,
+    MoveResponse,
+)
+from chess.database.connection import get_session
+from chess.database.games_repository import (
+    create_game,
+    get_active_bot_game_ids,
+    get_game_by_id,
+)
+from chess.database.moves_repository import get_moves_by_game_id
+from chess.database.players_repository import (
+    create_player,
+    get_player_id_by_name_and_bot,
+    get_players_by_game_id,
+)
+from chess.exceptions import GameNotFoundError, InvalidMoveError
+from chess.models.game import Game
+from chess.services.game_service import play_move
+from chess.utils.chess_logger import logger
 
 router = APIRouter()
 
 
-@router.post('/games')
+@router.post("/games")
 def start_new_game_router(request: CreateGameRequest, session: Session = Depends(get_session)) -> GameResponse:
     white_id = get_player_id_by_name_and_bot(name=request.white_player,
                                      bot=request.is_bot_white,
@@ -52,16 +64,16 @@ def start_new_game_router(request: CreateGameRequest, session: Session = Depends
         raise
 
 
-@router.get('/games/{game_id}/players')
+@router.get("/games/{game_id}/players")
 def get_players_by_game_id_router(game_id: int, session: Session = Depends(get_session)) -> tuple[str, str, bool, bool]:
-    """Get players names based on game_id"""
+    """Get players names based on game_id."""
     players = get_players_by_game_id(game_id=game_id, session=session)
     if players is None:
         raise HTTPException(status_code=404, detail=f"Game with id {game_id} not found")
     return players
 
 
-@router.get('/bot/games')
+@router.get("/bot/games")
 def get_bot_active_games_router(session: Session = Depends(get_session)) -> list[int]:
     """Get bot games awaiting move."""
     bot_games = get_active_bot_game_ids(session=session)
@@ -70,9 +82,9 @@ def get_bot_active_games_router(session: Session = Depends(get_session)) -> list
     return bot_games
 
 
-@router.get('/games/{game_id}')
+@router.get("/games/{game_id}")
 def get_game_by_game_id_router(game_id: int, session: Session = Depends(get_session)) -> GameResponse:
-    """Get game data based on game id"""
+    """Get game data based on game id."""
     game_data = get_game_by_id(game_id=game_id, session=session)
     if game_data is None:
         logger.warning(f"No Game {game_id} found")
@@ -89,13 +101,13 @@ def get_game_by_game_id_router(game_id: int, session: Session = Depends(get_sess
         )
 
 
-@router.post('/games/{game_id}/move')
+@router.post("/games/{game_id}/move")
 def play_move_router(request: MoveRequest, game_id: int, session: Session = Depends(get_session)) -> MessageResponse:
-    """Execute move, save into DB and update game"""
+    """Execute move, save into DB and update game."""
     try:
         play_move(start=request.start_square, end=request.end_square,
                   game_id=game_id, session=session)
-        logger.info('Human move played successfully')
+        logger.info("Human move played successfully")
         return MessageResponse(message="Move played successfully")
 
     except GameNotFoundError as error:
@@ -108,9 +120,9 @@ def play_move_router(request: MoveRequest, game_id: int, session: Session = Depe
         raise HTTPException(status_code=500, detail="Database operation failed")
 
 
-@router.get('/games/{game_id}/moves')
+@router.get("/games/{game_id}/moves")
 def get_moves_by_game_id_router(game_id: int, session: Session = Depends(get_session)) -> list[MoveResponse]:
-    """Presents list of moves from a game"""
+    """Presents list of moves from a game."""
     moves = get_moves_by_game_id(game_id=game_id, session=session)
     return [
         MoveResponse(
@@ -124,4 +136,3 @@ def get_moves_by_game_id_router(game_id: int, session: Session = Depends(get_ses
         )
         for move in moves
     ]
-

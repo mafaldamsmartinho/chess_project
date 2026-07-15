@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 
-from chess.database.connection import engine
-from chess.database.create_tables import create_tables
-from chess.api.routes import router
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+
+from chess.api.routes import router
+from chess.database.connection import engine
+from chess.database.create_tables import create_tables
 
 
 @asynccontextmanager
@@ -14,7 +15,6 @@ async def lifespan(api: FastAPI):
         yield
     finally:
         engine.dispose()
-
 
 api = FastAPI(lifespan=lifespan)
 api.include_router(router=router)

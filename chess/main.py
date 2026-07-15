@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
-from chess.database.repositories import create_tables
-from chess.database.db_manager import disconnect_database, connect_database
+from chess.database.connection import engine
+from chess.database.create_tables import create_tables
 from chess.api.routes import router
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -9,12 +9,11 @@ from fastapi.staticfiles import StaticFiles
 
 @asynccontextmanager
 async def lifespan(api: FastAPI):
-    connect_database()
     try:
         create_tables()
         yield
     finally:
-        disconnect_database()
+        engine.dispose()
 
 
 api = FastAPI(lifespan=lifespan)

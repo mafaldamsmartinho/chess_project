@@ -1,39 +1,24 @@
-from chess.database.db_manager import get_connection, release_connection
+from chess.database.models import Moves
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 
-def save_move(game_id: int, move_number: int, start: str, end: str, piece: str, captured_piece: str | None) -> int:
+def save_move(game_id: int, move_number: int, start: str, end: str, piece: str, captured_piece: str | None, session: Session) -> int:
     """Adds new move into DB"""
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""--sql
-                INSERT INTO moves (game_id, move_number,
-                start_square, end_square,
-                piece, captured_piece)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING id;""",
-                (game_id, move_number,
-                 start, end,
-                 piece, captured_piece,))
-
-    move_id = cur.fetchone()[0]
-
-    conn.commit()
-    cur.close()
-    release_connection(conn=conn)
-    return move_id
+    move = Moves(game_id=game_id, move_number=move_number,
+                 start_square=start, end_square=end, piece=piece,
+                 captured_piece=captured_piece)
+    session.add(move)
+    session.flush()
+    return move.id
 
 
-def get_moves_by_game_id(game_id: int) -> list[tuple[int, int, int, str, str, str, str | None]]:
-    """Returns moves data from game id"""
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""--sql
-                SELECT * FROM moves WHERE game_id = %s""", (game_id,))
-
-    move_data = cur.fetchall()
-    if move_data is None:
-        return []
-
-    cur.close()
-    release_connection(conn=conn)
-    return move_data
+def get_moves_by_game_id(game_id: int, session: Session) -> list[Moves]:
+    """Returns moves data from a game."""
+    statement = (
+        select(Moves)
+        .where(Moves.game_id == game_id)
+        .order_by(Moves.move_number)
+    )
+    return list(session.scalars(statement).all())

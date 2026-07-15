@@ -36,7 +36,7 @@ class Bot:
                 ):
                     if (
                         end_p not in kill_points_dict
-                    ):  # Avoid duplicate checks of same piece in repeted end positions
+                    ):  # Avoid duplicate checks of same piece in repeted end
                         kill_points_dict[end_p] = self.kill_piece_points(
                             game=game, end=end_p
                         )
@@ -76,28 +76,28 @@ class Bot:
         match piece.type:
             case PieceType.KING:
                 valid_piece_move = validate_king_move(
-                    board=game.board, start_position=start_p, end_position=end_p
-                )
+                    board=game.board, start_position=start_p,
+                    end_position=end_p)
             case PieceType.QUEEN:
                 valid_piece_move = validate_queen_move(
-                    board=game.board, start_position=start_p, end_position=end_p
-                )
+                    board=game.board, start_position=start_p,
+                    end_position=end_p)
             case PieceType.KNIGHT:
                 valid_piece_move = validate_knight_move(
-                    board=game.board, start_position=start_p, end_position=end_p
-                )
+                    board=game.board, start_position=start_p,
+                    end_position=end_p)
             case PieceType.BISHOP:
                 valid_piece_move = validate_bishop_move(
-                    board=game.board, start_position=start_p, end_position=end_p
-                )
+                    board=game.board, start_position=start_p,
+                    end_position=end_p)
             case PieceType.ROOK:
                 valid_piece_move = validate_rook_move(
-                    board=game.board, start_position=start_p, end_position=end_p
-                )
+                    board=game.board, start_position=start_p,
+                    end_position=end_p)
             case PieceType.PAWN:
                 valid_piece_move = validate_pawn_move(
-                    board=game.board, start_position=start_p, end_position=end_p
-                )
+                    board=game.board, start_position=start_p,
+                    end_position=end_p)
         return valid_piece_move
 
     def kill_piece_points(self, game: Game, end: tuple[int, int]) -> int:
@@ -179,10 +179,12 @@ class Bot:
                 if start != protected_square and protected_piece.type != PieceType.KING:
                     piece = game.board.get_piece_by_index(index_position=start)
                     valid_piece_move = self.is_valid_piece_move(
-                        game=game, piece=piece, start_p=start, end_p=protected_square
+                        game=game, piece=piece, start_p=start,
+                        end_p=protected_square
                     )
                     if valid_piece_move and is_legal_move(
-                        game=game, start_position=start, end_position=protected_square
+                        game=game, start_position=start,
+                        end_position=protected_square
                     ):
                         match protected_piece.type:
                             case PieceType.QUEEN:
@@ -195,14 +197,17 @@ class Bot:
                                 protected_points += 3
                             case PieceType.PAWN:
                                 protected_points += 1
-            game.board.set_piece(index_position=protected_square, piece=protected_piece)
+            game.board.set_piece(index_position=protected_square,
+                                 piece=protected_piece)
         return protected_points
 
     def score_move(
-        self, game: Game, start_position: tuple, end_position: tuple, kill_points: int
+        self, game: Game, start_position: tuple, end_position: tuple,
+        kill_points: int
     ) -> float:
         """Adds the calculated score to each move dictionary."""
-        captured_piece = game.board.get_piece_by_index(index_position=end_position)
+        captured_piece = game.board.get_piece_by_index(
+            index_position=end_position)
         game.board.move_piece(start=start_position, end=end_position)
         move_score = self.score_move_function(
             game=game,
@@ -226,7 +231,8 @@ class Bot:
             game=game, bot_positions=bot_positions, end_positions=end_positions
         )
         points_exposed_pieces = self.expose_pieces_points(
-            game=game, bot_virtual_position=end_position, end_positions=end_positions
+            game=game, bot_virtual_position=end_position,
+            end_positions=end_positions
         )
         points_check_opponent_king = self.check_opponent_king_points(game=game)
         score = (
@@ -238,7 +244,8 @@ class Bot:
         )
         return score
 
-    def choose_move(self, game: Game) -> tuple[tuple[int, int], tuple[int, int]]:
+    def choose_move(self, game: Game
+                    ) -> tuple[tuple[int, int], tuple[int, int]]:
         bot_moves = self.list_possible_scored_moves(game=game)
         print(bot_moves)
         best_move = max(bot_moves, key=lambda move: move["score"])

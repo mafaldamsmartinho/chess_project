@@ -43,12 +43,12 @@ def start_new_game_router(
         # Create white or/and black id player in table
         if white_id is None:
             white_id = create_player(
-                name=request.white_player, bot=request.is_bot_white, session=session
-            )
+                name=request.white_player, bot=request.is_bot_white,
+                session=session)
         if black_id is None:
             black_id = create_player(
-                name=request.black_player, bot=request.is_bot_black, session=session
-            )
+                name=request.black_player, bot=request.is_bot_black,
+                session=session)
         game = Game()
 
         game_id = create_game(
@@ -79,12 +79,14 @@ def get_players_by_game_id_router(
     """Get players names based on game_id."""
     players = get_players_by_game_id(game_id=game_id, session=session)
     if players is None:
-        raise HTTPException(status_code=404, detail=f"Game with id {game_id} not found")
+        raise HTTPException(status_code=404,
+                            detail=f"Game with id {game_id} not found")
     return players
 
 
 @router.get("/bot/games")
-def get_bot_active_games_router(session: Session = Depends(get_session)) -> list[int]:
+def get_bot_active_games_router(session: Session = Depends(get_session)
+                                ) -> list[int]:
     """Get bot games awaiting move."""
     bot_games = get_active_bot_game_ids(session=session)
     if not bot_games:
@@ -100,7 +102,8 @@ def get_game_by_game_id_router(
     game_data = get_game_by_id(game_id=game_id, session=session)
     if game_data is None:
         logger.warning(f"No Game {game_id} found")
-        raise HTTPException(status_code=404, detail=f"Game with id {game_id} not found")
+        raise HTTPException(status_code=404,
+                            detail=f"Game with id {game_id} not found")
 
     logger.info(f"Succesfully loaded game {game_id}")
     return GameResponse(
@@ -135,7 +138,7 @@ def play_move_router(
         raise HTTPException(status_code=400, detail=str(error))
 
     except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Database operation failed")
+        raise HTTPException(status_code=500, detail="DB operation failed")
 
 
 @router.get("/games/{game_id}/moves")

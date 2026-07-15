@@ -5,6 +5,7 @@ import time
 import cProfile
 import signal
 import sys
+import datetime
 
 pr = cProfile.Profile()
 pr.enable()
@@ -12,7 +13,8 @@ pr.enable()
 
 def handle_sigterm(signum, frame):
     pr.disable()
-    pr.dump_stats(f"snakeviz/{round(time.perf_counter())}example_profiling.prof")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    pr.dump_stats(f"snakeviz/{timestamp}_example_profiling.prof")
     print("Received SIGTERM...")
     sys.exit(0)
 

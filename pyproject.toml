@@ -18,6 +18,7 @@ pydantic = "^2.13.4"
 sqlalchemy = "^2.0.51"
 psycopg2-binary = "^2.9.12"
 ruff = "^0.15.21"
+mypy = "^2.3.0"
 
 [build.system]
 requires = ["poetry-core"]

@@ -1,5 +1,10 @@
+from typing import TYPE_CHECKING
+
 from chess.models.enums import GameTurn, PieceType
 from chess.models.piece import Piece
+
+if TYPE_CHECKING:
+    from chess.utils.serialization import SerializedBoard, SerializedPiece
 
 NUM_ROWS: int = 8
 NUM_COLS: int = 8
@@ -14,7 +19,16 @@ MAJOUR_PIECES: list[PieceType] = [
     PieceType.ROOK,
 ]
 INDEX_MAJOUR_PIECES: list = [1, 1, 1, 1, 1, 2, 2, 2]
-SQUARE_TO_INDEX: dict = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
+SQUARE_TO_INDEX: dict[str, int] = {
+    "a": 0,
+    "b": 1,
+    "c": 2,
+    "d": 3,
+    "e": 4,
+    "f": 5,
+    "g": 6,
+    "h": 7,
+}
 LAST_ROW: list = ["", "a", "b", "c", "d", "e", "f", "g", "h"]
 PIECES_SIMPLE: dict = {
     PieceType.PAWN: "P",
@@ -96,7 +110,9 @@ ALLOWED_POSITIONS = {
 class Board:
     def __init__(self) -> None:
         """Start a board matrix 8x8."""
-        self.board = [[None for col in range(NUM_COLS)] for row in range(NUM_ROWS)]
+        self.board: list[list[Piece | None]] = [
+            [None for col in range(NUM_COLS)] for row in range(NUM_ROWS)
+        ]
         self.setup_board()
 
     def setup_board(self) -> None:
@@ -137,7 +153,7 @@ class Board:
         if not self.is_valid_position(position=position):
             raise ValueError("Invalid position.")
         index = list(position)
-        index_char = SQUARE_TO_INDEX.get(index[0])
+        index_char = SQUARE_TO_INDEX[index[0]]
         index_num = int(index[1]) - 1
         return (index_num, index_char)
 
@@ -165,22 +181,23 @@ class Board:
         self.set_piece(index_position=start, piece=None)
         self.set_piece(index_position=end, piece=piece)
 
-    def to_dict(self) -> list[list[dict[str, str | int] | None]]:
+    def to_dict(self) -> "SerializedBoard":
         """Converts board into a dict of elements None or Piece."""
-        board_list: list = []
-        rows: list = []
+        board_list: SerializedBoard = []
+        rows: list[SerializedPiece | None] = []
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
-                if self.board[row][col] is not None:
+                piece = self.board[row][col]
+                if piece is None:
+                    rows.append(None)
+                else:
                     rows.append(
                         {
-                            "colour": self.board[row][col].colour,
-                            "type": self.board[row][col].type.value,
-                            "index": self.board[row][col].index,
+                            "colour": piece.colour,
+                            "type": piece.type.value,
+                            "index": piece.index,
                         }
                     )
-                else:
-                    rows.append(None)
             board_list.append(rows)
             rows = []
         return board_list

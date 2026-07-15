@@ -34,8 +34,8 @@ def update_game(
     if game_data is None:
         return None
 
-    game_data.turn = GameTurn(current_turn).value
-    game_data.status = GameStatus(status).value
+    game_data.turn = GameTurn(current_turn)
+    game_data.status = GameStatus(status)
     game_data.board = board_state
     session.flush()
     return game_data

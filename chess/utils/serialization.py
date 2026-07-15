@@ -1,8 +1,15 @@
 from chess.api.schemas import PieceData
 from chess.models.board import Board
 from chess.models.piece import Piece
+from typing import TypedDict
 
-SerializedPiece = dict[str, str | int]
+
+class SerializedPiece(TypedDict):
+    colour: str
+    type: str
+    index: int
+
+
 SerializedBoard = list[list[SerializedPiece | None]]
 
 

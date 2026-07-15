@@ -7,7 +7,6 @@ from chess.database.moves_repository import save_move
 from chess.exceptions import GameNotFoundError, InvalidMoveError
 from chess.models.enums import GameStatus, GameTurn
 from chess.models.game import Game
-from chess.models.piece import Piece
 from chess.services.move_validator import is_king_in_check_mate, is_legal_move
 from chess.utils.serialization import deserialize_board
 
@@ -22,7 +21,7 @@ def play_move(start: str, end: str, game_id: int, session: Session) -> dict:
         game = Game(turn=game_data.turn, status=game_data.status)
         game.set_board(board=deserialize_board(boardstate=game_data.board))
 
-        piece: Piece = game.board.get_piece(position=start)
+        piece = game.board.get_piece(position=start)
 
         if piece is None:
             raise InvalidMoveError("No piece found on start square.")

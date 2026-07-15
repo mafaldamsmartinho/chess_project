@@ -61,6 +61,7 @@ def get_king_position(
                 and piece.colour == current_turn
             ):
                 return el
+    return None
 
 
 def is_king_in_check(board: Board, king_turn: GameTurn | str) -> bool:
@@ -219,7 +220,9 @@ def validate_pawn_move(
     board: Board, start_position: tuple[int, int], end_position: tuple[int, int]
 ) -> bool:
     """ "Check if pawn move is valid according with colour."""
-    start_piece: Piece = board.get_piece_by_index(index_position=start_position)
+    start_piece = board.get_piece_by_index(index_position=start_position)
+    if start_piece is None:
+        return False
     if start_piece.colour == GameTurn.WHITE:
         if (
             board.get_piece_by_index(index_position=end_position) is None

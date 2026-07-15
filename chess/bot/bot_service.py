@@ -11,8 +11,8 @@ def bot_play_move(game_id: int) -> None:
     game.set_board(board=deserialize_board(boardstate=game_data_bot["board"]))
 
     bot = Bot()
-    bot_start, bot_end = bot.choose_move(game=game)
-    bot_start = game.board.index_to_position(index_position=bot_start)
-    bot_end = game.board.index_to_position(index_position=bot_end)
+    bot_start_index, bot_end_index = bot.choose_move(game=game)
+    bot_start = game.board.index_to_position(index_position=bot_start_index)
+    bot_end = game.board.index_to_position(index_position=bot_end_index)
     play_move_call(game_id=game_id, start=bot_start, end=bot_end)
     return

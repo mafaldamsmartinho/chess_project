@@ -43,29 +43,33 @@ def start_new_game_router(
         # Create white or/and black id player in table
         if white_id is None:
             white_id = create_player(
-                name=request.white_player, bot=request.is_bot_white,
-                session=session)
+                name=request.white_player, bot=request.is_bot_white, session=session
+            )
         if black_id is None:
             black_id = create_player(
-                name=request.black_player, bot=request.is_bot_black,
-                session=session)
-        game = Game()
+                name=request.black_player, bot=request.is_bot_black, session=session
+            )
+        new_game = Game()
 
         game_id = create_game(
             white_id=white_id,
             black_id=black_id,
-            board_state=game.board,
+            board_state=new_game.board,
             session=session,
         )  # Create new game
-        game = get_game_by_id(game_id=game_id, session=session)
+        game_data = get_game_by_id(game_id=game_id, session=session)
+        if game_data is None:
+            raise HTTPException(
+                status_code=404, detail=f"Game with id {game_id} not found"
+            )
         session.commit()
         return GameResponse(
-            game_id=game.id,
-            white_id=game.white_id,
-            black_id=game.black_id,
-            status=game.status,
-            turn=game.turn,
-            board=game.board,
+            game_id=game_data.id,
+            white_id=game_data.white_id,
+            black_id=game_data.black_id,
+            status=game_data.status,
+            turn=game_data.turn,
+            board=game_data.board,
         )
     except Exception:
         session.rollback()
@@ -79,14 +83,12 @@ def get_players_by_game_id_router(
     """Get players names based on game_id."""
     players = get_players_by_game_id(game_id=game_id, session=session)
     if players is None:
-        raise HTTPException(status_code=404,
-                            detail=f"Game with id {game_id} not found")
+        raise HTTPException(status_code=404, detail=f"Game with id {game_id} not found")
     return players
 
 
 @router.get("/bot/games")
-def get_bot_active_games_router(session: Session = Depends(get_session)
-                                ) -> list[int]:
+def get_bot_active_games_router(session: Session = Depends(get_session)) -> list[int]:
     """Get bot games awaiting move."""
     bot_games = get_active_bot_game_ids(session=session)
     if not bot_games:
@@ -102,8 +104,7 @@ def get_game_by_game_id_router(
     game_data = get_game_by_id(game_id=game_id, session=session)
     if game_data is None:
         logger.warning(f"No Game {game_id} found")
-        raise HTTPException(status_code=404,
-                            detail=f"Game with id {game_id} not found")
+        raise HTTPException(status_code=404, detail=f"Game with id {game_id} not found")
 
     logger.info(f"Succesfully loaded game {game_id}")
     return GameResponse(

@@ -62,4 +62,4 @@ class Moves(Base):
     start_square: Mapped[str] = mapped_column(Text, nullable=False)
     end_square: Mapped[str] = mapped_column(Text, nullable=False)
     piece: Mapped[str] = mapped_column(Text, nullable=False)
-    captured_piece: Mapped[str] = mapped_column(Text)
+    captured_piece: Mapped[str | None] = mapped_column(Text)

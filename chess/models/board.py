@@ -1,6 +1,5 @@
 from chess.models.piece import Piece
 from chess.models.enums import GameTurn, PieceType
-from fastapi import HTTPException
 
 NUM_ROWS: int = 8
 NUM_COLS: int = 8
@@ -65,6 +64,8 @@ class Board:
 
     def position_to_index(self, position: str) -> tuple[int, int]:
         """Converts position 'a2' to index (0,1)"""
+        if not self.is_valid_position(position=position):
+            raise ValueError("Invalid position.")
         index = list(position)
         index_char = SQUARE_TO_INDEX.get(index[0])
         index_num = int(index[1]) - 1

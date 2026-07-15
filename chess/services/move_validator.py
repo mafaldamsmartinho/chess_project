@@ -173,6 +173,7 @@ def validate_pawn_move(board: Board, start_position: tuple[int, int], end_positi
             return True
         else:
             return False
+    return False
 
 
 def validate_rook_move(board: Board, start_position: tuple[int, int], end_position: tuple[int, int]) -> bool:

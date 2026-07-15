@@ -3,8 +3,6 @@ from chess.utils.game_state import split_opponents
 from chess.models.enums import PieceType
 from chess.models.game import Game
 from chess.models.piece import Piece
-import copy
-import time
 
 
 class Bot:
@@ -135,7 +133,7 @@ class Bot:
                     piece = game.board.get_piece_by_index(index_position=start)
                     valid_piece_move = self.is_valid_piece_move(game=game, piece=piece, start_p=start, end_p=protected_square)
                     if valid_piece_move and is_legal_move(game=game, start_position=start, end_position=protected_square):
-                        match protected_piece:
+                        match protected_piece.type:
                             case PieceType.QUEEN:
                                 protected_points += 8
                             case PieceType.KNIGHT:
@@ -163,7 +161,7 @@ class Bot:
         game.board.set_piece(index_position=end_position, piece=captured_piece)
         return move_score
 
-    def score_move_function(self, game: Game, start_position: tuple, end_position: tuple, kill_points: int):
+    def score_move_function(self, game: Game, start_position: tuple, end_position: tuple, kill_points: int) -> float:
         """Scores bot move"""
         bot_positions, end_positions = split_opponents(game=game)
         points_possible_moves = self.number_of_possible_piece_moves(game=game,

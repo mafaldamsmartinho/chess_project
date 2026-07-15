@@ -1,6 +1,5 @@
 import requests
 from typing import Any
-from chess.api.schemas import MessageResponse
 
 BASE_URL = "http://127.0.0.1:8000"
 
@@ -17,7 +16,7 @@ def get_active_bot_game_ids_call() -> list[int] | None:
     return response.json()
 
 
-def play_move_call(game_id: int, start: str, end: str) -> MessageResponse:
+def play_move_call(game_id: int, start: str, end: str) -> dict[str, Any]:
     response = requests.post(url=f"{BASE_URL}/games/{game_id}/move", json={
         "start_square": start,
         "end_square": end

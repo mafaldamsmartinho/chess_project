@@ -26,4 +26,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 lint.extend-select = ["D415"]
-lint.ignore = ["T201","E501"]
+lint.ignore = ["T201","E501"] 
+# T201 - use of print()
+# E501 - lines longer than the configured maximum length.

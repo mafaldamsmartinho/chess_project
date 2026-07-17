@@ -46,11 +46,7 @@ def play_move(start: str, end: str, game_id: int, session: Session) -> dict:
             is_king_in_check_mate(game=game, current_turn=game.turn)
             or move_number > 100
         ):  # Check if next player king is in check mate
-            if game.turn == GameTurn.WHITE:
-                game.status = GameStatus.BLACK_WIN
-            else:
-                game.status = GameStatus.WHITE_WIN
-            game.turn = GameTurn.FINISHED
+            game_winner(game=game)
         save_move(
             game_id=game_id,
             move_number=move_number,
@@ -83,3 +79,14 @@ def next_move_number(game_id: int, session: Session) -> int:
         select(func.max(Moves.move_number)).where(Moves.game_id == game_id)
     )
     return 1 if last_move_number is None else last_move_number + 1
+
+
+def game_winner(game: Game) -> None:
+    if game.status != GameStatus.ONGOING:
+        raise ValueError("Inactive game. No winner")
+    if game.turn == GameTurn.WHITE:
+        game.status = GameStatus.BLACK_WIN
+    else:
+        game.status = GameStatus.WHITE_WIN
+    game.turn = GameTurn.FINISHED
+    return

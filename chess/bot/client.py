@@ -2,7 +2,7 @@ from typing import Any
 
 import requests
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://api:8000"
 
 
 def get_game_by_id_call(game_id: int) -> dict[str, Any]:

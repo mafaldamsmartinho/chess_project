@@ -1,8 +1,8 @@
-import requests
 from typing import Any
-from api.schemas import MessageResponse
 
-BASE_URL = "http://127.0.0.1:8000"
+import requests
+
+BASE_URL = "http://api:8000"
 
 
 def get_game_by_id_call(game_id: int) -> dict[str, Any]:
@@ -17,10 +17,10 @@ def get_active_bot_game_ids_call() -> list[int] | None:
     return response.json()
 
 
-def play_move_call(game_id: int, start: str, end: str) -> MessageResponse:
-    response = requests.post(url=f"{BASE_URL}/games/{game_id}/move", json={
-        "start_square": start,
-        "end_square": end
-    })
+def play_move_call(game_id: int, start: str, end: str) -> dict[str, Any]:
+    response = requests.post(
+        url=f"{BASE_URL}/games/{game_id}/move",
+        json={"start_square": start, "end_square": end},
+    )
     response.raise_for_status()
     return response.json()

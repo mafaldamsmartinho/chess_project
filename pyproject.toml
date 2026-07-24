@@ -11,7 +11,20 @@ python = ">=3.11"
 numpy = ">=1.26.4"
 fastapi = {extras = ["standard"], version = "^0.136.3"}
 requests = "^2.34.2"
+snakeviz = "^2.2.2"
+pytest = "^9.1.1"
+pydantic = "^2.13.4"
+sqlalchemy = "^2.0.51"
+psycopg2-binary = "^2.9.12"
+ruff = "^0.15.21"
+mypy = "^2.3.0"
 
 [build.system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+lint.extend-select = ["D415"]
+lint.ignore = ["T201","E501"] 
+# T201 - use of print()
+# E501 - lines longer than the configured maximum length.

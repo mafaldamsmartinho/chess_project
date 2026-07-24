@@ -1,5 +1,7 @@
 from enum import Enum
 
+from pydantic import BaseModel
+
 
 class GameStatus(str, Enum):
     ONGOING = "ongoing"
@@ -20,3 +22,13 @@ class PieceType(str, Enum):
     BISHOP = "bishop"
     KNIGHT = "knight"
     PAWN = "pawn"
+
+
+class PieceState(BaseModel):
+    colour: str
+    type: str
+    index: int
+
+
+class BoardState(BaseModel):
+    board: list[list[PieceState | None]]

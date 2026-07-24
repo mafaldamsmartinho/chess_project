@@ -20,6 +20,8 @@
             "args": [
                 "chess.main:api",
                 "--reload",
+                "--reload-dir",
+                "chess",
                 "--host",
                 "127.0.0.1",
                 "--port",

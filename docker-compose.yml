@@ -1,0 +1,44 @@
+services:
+
+  db:
+    image: postgres:18.4
+    restart: always # Restarts it automatically if it crashes or Docker restarts.
+    shm_size: 128mb # set shared memory limit when using docker compose
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    
+  api:
+    build: .
+    image: chess-app:0.1
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/docs').raise_for_status()"]
+    command: fastapi run chess/main.py --port 8000
+
+
+  bot:
+    image: chess-app:0.1
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      api:
+        condition: service_healthy
+    command: python -m chess.bot_main
+
+
+volumes:
+  postgres_data:

@@ -273,8 +273,6 @@ class TestKingState:
         )
 
         assert (
-            move_validator.is_king_in_check_mate(
-                game=game, current_turn=GameTurn.WHITE
-            )
+            move_validator.is_king_in_check_mate(game=game, current_turn=GameTurn.WHITE)
             is expected
         )

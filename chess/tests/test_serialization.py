@@ -53,9 +53,7 @@ class TestDeserializeBoard:
     def test_deserialize_board_replaces_default_setup(self, empty_board):
         board = deserialize_board(boardstate=empty_board.to_dict())
 
-        pieces_count = sum(
-            piece is not None for row in board.board for piece in row
-        )
+        pieces_count = sum(piece is not None for row in board.board for piece in row)
         assert pieces_count == 0
 
     def test_deserialize_board_accepts_serialized_starting_board(self):
